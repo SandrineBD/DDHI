@@ -1,0 +1,4 @@
+#A Ranked
+
+interpretability	3
+Interpretable model	1

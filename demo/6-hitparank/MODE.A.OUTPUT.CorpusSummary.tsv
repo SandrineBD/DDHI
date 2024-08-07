@@ -1,0 +1,62 @@
+Overall Corpus Statistics:
+
+Number of documents: 4
+
+Number of paragraphs retrieved from corpus: 675
+
+Number of corpus paragraphs annotated and ranked: 51
+
+Percentage of corpus paragraphs annotated and ranked: 7.56%
+
+Overview of retained hits per list:
+
+TOTALS_LISTY: 1 8
+TOTALS_LISTY: 3 18
+
+TOTALS_LISTX: 1 4
+TOTALS_LISTX: 3 29
+
+
+
+
+Paragraphs retrieved are currently retained if 1/ there were hits on any of the list 2/ the paragraph actually is longer than 5 word tokens (we try to avoid retrieving section 'titles', etc.
+
+List Y : Hits retained vs. retrieved: 26 / 32
+
+List X : Hits retained vs. retrieved: 33 / 44
+
+List U : Hits retained vs. retrieved:  / 
+
+List Ybis : Hits retained vs. retrieved:  / 
+
+List Z : Hits retained vs. retrieved:  / 
+
+Hit Pattern Overview: Label	Number of members
+
+NYNYN	2
+NYNNN	20
+NNNYN	29
+
+
+TermU	#OccurrencesU	ParagraphPercentageU
+
+
+
+TermY	#OccurrencesY	ParagraphPercentageY
+
+interpretability	18	69.23
+interpretable_model	8	30.77
+
+
+TermYbis	#OccurrencesYbis	ParagraphPercentageYbis
+
+
+
+TermX	#OccurrencesX	ParagraphPercentageX
+
+explainability	29	87.88
+explainable	4	12.12
+
+
+TermZ	#OccurrencesZ	ParagraphPercentageZ
+
