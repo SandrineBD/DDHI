@@ -1,0 +1,79 @@
+\section{Introduction}
+\label{sec:intro}
+
+% Counterfactual Explanations $\subset$ Explanations $\subset$ FATE $\subset$ ML
+
+Machine learning is increasingly accepted as an effective tool to enable large-scale automation in many domains. In lieu of hand-designed rules, algorithms are able to learn from data to discover patterns and support decisions. %Its widespread applicability has garnered the interest of academia and industry alike. 
+%
+Those decisions can, and do, directly or indirectly impact humans; high-profile cases include applications in credit lending~\cite{credit-risk-ml}, talent sourcing~\cite{hiring-ml}, parole~\cite{parole-ml}, and medical treatment~\cite{medical-treatment-ml}.
+%Due to the life-impacting ability of such decisions, it is of utmost importance to ensure that the decision process is ethically sound.  \jpd{I'd prefer to keep `ethics' out of this -- that's a very different community}
+%
+The nascent Fairness, Accountability, Transparency, and Ethics (FATE) in machine learning community has emerged as a multi-disciplinary group of researchers and industry practitioners interested in developing techniques to detect bias in machine learning models, develop algorithms to counteract that bias, generate human-comprehensible explanations for the machine decisions, hold organizations responsible for unfair decisions, etc.   %\jpd{Stopping here for the night -- still not totally sure about the intro, but it definitely needs work.}
+
+Human-understandable explanations for machine-produced decisions are advantageous in several ways. For example, focusing on a use case of applicants applying for loans, the benefits would include:   %\jpd{``In the case of an applicant participating using [a particular system..]'', ...}  
+\begin{itemize}[leftmargin=10pt]
+    \item An explanation can be beneficial to the applicant whose life is impacted by the decision. For example, it helps an applicant understand which of their attributes were strong drivers in determining a decision.
+    \item Various forms of explanations can serve as a proxy for transparency in the system, which could increase its trustworthiness.
+    \item Further, it can help an applicant challenge a decision if they feel an unfair treatment has been meted out, e.g., if one's race was crucial in determining the outcome. This can also be useful for organizations to check for bias in their algorithms.  
+    \item In some instances, an explanation provides the applicant with feedback that they can act upon to receive the desired outcome at a future time.
+    \item Explanations can help the machine learning model developers identify, detect, and fix bugs and other performance issues. 
+    \item Explanations help adhere to laws surrounding machine-produced decisions, e.g., GDPR~\cite{GDPR}. 
+    % \item \jpd{Something about the law? e.g. right to explanation}
+\end{itemize}
+
+
+Explainability in machine learning is broadly about using inherently interpretable and transparent models or generating post-hoc explanations for opaque models. 
+Examples of the former include linear/logistic regression, decision trees, rule sets, etc. Examples of the latter include random forests, support vector machines (SVMs), and neural networks. Post-hoc explanation approaches can either be model-specific or model-agnostic. 
+Explanations by feature importance and model simplification are two broad kinds of model-specific approaches. 
+Model-agnostic approaches can be categorized into visual explanations, local explanations, feature importance, and model simplification. 
+
+\vspace{5pt}
+
+Feature importance finds the most influential features contributing to the model's overall accuracy or for a particular decision, e.g., SHAP~\cite{shap-paper}, QII~\cite{QII_SA1}. 
+Model simplification finds an interpretable model that imitates the opaque model closely. 
+Dependency plots are a popular kind of visual explanation, e.g., Partial Dependence Plots~\citep{intro_PDP}, Accumulated Local Effects Plot~\citep{intro_ALE}, Individual Conditional Expectation~\citep{ICE_PDP1}. 
+They plot the change in the model's prediction as one or multiple features are changed. 
+Local explanations differ from other methods because they only explain a single prediction. 
+Local explanations can be further categorized into approximation and example-based approaches. 
+Approximation approaches sample new datapoints in the vicinity of the datapoint whose prediction from the model needs to be explained (hereafter called the explainee datapoint), and then fit a linear model (e.g., LIME~\citep{ribeiro_why_2016}) or extracts a rule set from them (e.g., Anchors~\citep{Ribeiro2018Anchors}).
+Example-based approaches seek to find datapoints in the vicinity of the explainee datapoint. 
+They either offer explanations in the form of datapoints that have the same prediction as the explainee datapoint or the datapoints whose prediction differs from the explainee datapoint. 
+Note that the latter kind of datapoints are still close to the explainee datapoint and are termed as ``counterfactual explanations'' (CFE). 
+
+% Research in explainability in machine learning can be broadly divided into categories such as feature attribution methods (eg, Partial Dependence Plots~\citep{intro_PDP}, Permutation Feature Importance~\citep{intro_Permute}, Accumulated Local Effects Plot~\citep{intro_ALE}, Individual Conditional Expectation~\citep{ICE_PDP1}, Shapley values~\citep{molnar2019}), model approximation (eg. LIME~\citep{ribeiro_why_2016}), and example-based explanations (eg. case-based reasoning~\citep{intro_CBR}, counterfactual explanations).  \jpd{Two issues with the prior sentence.  (i) What about the folks in FATE ML who only want to train models that are explainable full stop e.g., Cynthia Rudin, that is, folks who do not think "train a black box model and then fit an explainer to it" is the right way to go? and (ii) This is very focused on JUST the ML community's research directions, many folks are interested in the higher-level intersection between that and society, etc.  I'd add a sentence for both.  For (i), ``We note an alternative approach focuses on ... outside the scope of this article; for reference, see~\citet{Something by Rudin}.'' For (ii), similar sentence, cite the FATML book or similar.} 
+% Feature attribution methods find the influence of the features which were used to make a decision. 
+% Model approximation methods either seek to explain a model's overall logic (global explanation) or explain a particular decision (local explanation). 
+% In case-based reasoning, the algorithm's decision is justified by showing the decisions for datapoints that are similar to the original datapoint.  \jpd{I don't know enough about CBR, but is this right?  Is this related to individual fairness ..?}
+% In counterfactual explanations, a datapoint is found, which is sufficiently close to the original datapoint but has a different class label.  \jpd{This isn't right, or it is right but it isn't exact enough.  I'd steal some text from the new abstract here.}
+% The difference in the features between the counterfactual and the original datapoint is called the causal reasoning of the decision that the original datapoint received. 
+
+\vspace{5pt}
+
+Recall the use case of applicants applying for a loan. For an individual whose loan request has been denied, counterfactual explanations provide them with \emph{actionable} feedback that could help them make changes to their features in order to transition to the desirable side of the decision boundary, i.e., get the loan. This feedback is termed as an \emph{algorithmic recourse}. 
+Unlike several other explainability techniques, CFEs (or recourses) do not explicitly answer the ``why'' the model made a prediction; instead, they provide suggestions to achieve the desired outcome. 
+CFEs are also applicable to black-box models (when only the \functionname{predict} function of the model is accessible), and therefore place no restrictions on model complexity and do not require model disclosure. 
+They also do not necessarily approximate the underlying model, producing accurate feedback. 
+Owing to their intuitive nature, CFEs are also amenable to legal frameworks (see~\cref{sec:legal}). 
+% \jpd{amenable to legal frameworks? Generally applicable? something other than success} 
+% Due to increasing legal frameworks (see~\cref{sec:legal}), focus on ethical aspects of machine learning, and general curiosity to better understand machines, counterfactual explanations have gained the attention of academics and industry alike. 
+
+% Due to the recent GDPR regulation~\citep{GDPR} which mandates explainable decisions in case of full or partial automation, counterfactual explanations has gained the attention of academics and industry alike. 
+
+
+In this work, we collect, review and categorize \papers %\footnote{If we have missed some work, please contact us to add it to this review paper.} 
+recent papers that propose algorithms to generate counterfactual explanations for machine learning models. Many of these methods have focused on datasets that are either tabular or image-based. 
+We describe our methodology for collecting papers for this survey in~\cref{sec:method}. 
+We describe recent research themes in this field and categorize the collected papers among a fixed set of desiderata for effective counterfactual explanations (see~\cref{tab:main-table}). 
+
+
+The contributions of this review paper are:
+\begin{enumerate}
+    \item We examine a set of \papers recent papers on the same set of parameters to allow for an easy comparison of the techniques these papers propose and the assumptions they work under. 
+    \item The categorization of the papers achieved by this evaluation helps a researcher or a developer choose the most appropriate algorithm given the set of assumptions they have and the speed and quality of the generation they want to achieve. 
+    \item Comprehensive and lucid introduction for beginners in the area of counterfactual explanations for machine learning. 
+\end{enumerate}
+
+
+% Say something about how CEs are increasingly important due to the legal requirements of deploying automated decision.
+
+% Comments: Add that we are going to view it through the lens of - add in the setting for a loan, or somebody up for parole. 

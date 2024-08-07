@@ -1,0 +1,25 @@
+\section{Methodology}
+\label{sec:method}
+% We describe the method for our paper -- how we collected papers. 
+
+% End date of lit review (sometime in June 2020?)
+
+%\subsection{Transition into meat of paper}  Next, we do X then Y then Z ...
+
+\subsection{How we collected the paper to review?}
+We collected a set of \papers papers. This section provides the exact procedure used to arrive at this set of papers. 
+For the first version of this survey paper, we had started from a seed set of papers recommended by other people~\cite{mahajan_preserving_2020,mothilal_explaining_2020,ramakrishnan_synthesizing_2019,Ustun19:Actionable,wachter_counterfactual_2017}, followed by snowballing their references. 
+For this updated (second) version of the paper, we collected papers that cited the first paper that proposed CFEs for ML, i.e., \citet{wachter_counterfactual_2017} and the first version of this CFE survey paper~\citep{first-version-cfesurvey}. 
+
+For an even complete search, we searched for ``counterfactual explanations'', ``recourse'', and ``inverse classification'' on two popular search engines for scholarly articles, Semantic Scholar and Google scholar. 
+We looked for papers published in the last five years on both search engines. 
+This is a reasonable time frame since the paper that started the discussion of counterfactual explanations in the context of machine learning (specifically for tabular data) was published in 2017~\citep{wachter_counterfactual_2017}. 
+We collect papers that were published before 31st May 2022. 
+The papers we collected were published at conferences like KDD, IJCAI, FAccT, AAAI, WWW, NeurIPS, WHI, or uploaded to Arxiv. %\SV{Do we want to show the statistics of the conference vs. arxiv papers (as bar plot, for example)? This kind of shows how nascent the field is. }
+
+\subsection{Scope of the review}
+Even though the first paper we reviewed was published online in 2017, and most other papers we review cite it \citep{wachter_counterfactual_2017} as the seminal paper that started the discussion around counterfactual explanations, we do not claim that this is an entirely new idea. 
+Communities from data mining~\cite{fernandez-loria_explaining_2020,Provost1}, causal inference~\cite{causality:Pearl}, and even software engineering~\cite{metamorphic-testing} have explored similar ideas to identify the principal cause of a prediction, an effect, and a bug, respectively. 
+Even before the emergence of counterfactual explanations in applied fields, they have been the topic of discussion in fields like social sciences~\citep{Miller-xai:2019}, philosophy~\citep{Kment:phil1, Lewis1973:phil2, Ruben2004:phil3}, psychology~\citep{Byrne:psycho1,Byrne2019:psycho2,Kahneman1986:psycho3}. 
+In this review paper, we restrict our discussion to recent papers that discuss counterfactual explanations in machine learning, specifically classification settings. 
+These papers have been inspired by the emerging trend of FATE and the legal requirements pertaining to explainability in tasks automated by machine learning algorithms. 

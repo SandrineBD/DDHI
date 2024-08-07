@@ -1,0 +1,75 @@
+\subsection{Other works}
+\label{sec:other_works}
+This section enlists works that talk about the desirable properties of counterfactuals or point to their issues. We also talk about works that propose minor modifications to previous similar approaches. \\
+
+\textbf{Works exploring desirable CFE properties: }
+\citet{sokol_desiderata_2019} list several desirable properties of counterfactuals inspired from~\citet{Miller-xai:2019} and state how the method of flipping logical conditions in a decision tree satisfies most of them. 
+\citet{issues_posthoc} enlist \emph{proximity}, \emph{connectedness}, and \emph{stability} as three desirable properties of a CFE and propose the metrics to measure them. 
+
+
+\textbf{Works pointing to issues with CFEs:} 
+\citet{laugel_dangers_2019} says that if the explanation is not based on training data, but the artifacts of non-robustness of the classifier, it is unjustified.
+They define justified explanations to be connected to training data by a continuous set of datapoints, termed $\mathcal{E}$-chainability. 
+\citet{hidden_assumptions} state five reasons that have led to the success of counterfactual explanations and also point out the overlooked assumptions. They mention the unavoidable conflicts which arise due to the need for privacy invasion in order to generate helpful explanations. 
+\citet{Atoosa-philosophy-cfe} provide philosophical insight into the implicit assumptions and choices made when generating CFEs. 
+
+
+\textbf{Causal CFEs: } 
+\citet{cruds_cf} propose using conditional subspace VAEs (CSVAE), a variant of VAEs, to generate CFEs that obey correlations between features, causal relations between features, and personal preferences. This method builds a probabilistic data model of the training data using a CSVAE and uses it to generate CFEs. However, these CFEs are not with respect to a specific ML model. 
+\citet{cf-causal-latent-ontop} propose a technique that can be used with any counterfactual generation approach to generate causality abiding CFEs. 
+\citet{bernhard-causal-cfe-confounded} extend \citet{karimi-imperfect:2020}'s work to the setting where unobserved confounders may be present in the causal setting. 
+\citet{causality-from-transport-cfe} show that optimal transport-based methods are an approximation of Pearl's CFEs and hence can be used to generate causal CFEs. 
+\citet{beckers-causal-xai} delve further into the integration of causality, actual causation, and CFEs. 
+
+\textbf{CFE for specific models: }
+\citet{bayesian-network-CFE} propose a CFE generation approach targeted for Bayesian network classifiers. 
+\citet{artelt_computation_2019, efficient-contrastive} enlists the counterfactual optimization problem formulation for several model-specific cases, like generalized linear model, gaussian naive bayes, and mention the general algorithm to solve them. 
+\citet{Koopman2021PersuasiveCE} propose a BFS-based technique for generating CFEs for Bayesian networks. 
+
+\textbf{Works considering multi-agent scenarios of CFEs: }
+\citet{Manuel:game-theory} cast the counterfactual generation problem as a Stackelberg game between the decision maker and the person receiving the prediction. Given a ground set of CFEs, the proposed algorithm returns the top-k CFEs, which maximizes the utility of both the involved parties. 
+\citet{post-hoc-CFE-not-good} point out that the interests of the provider and receiver of model explanations might be in conflict, and the ambiguous post-hoc explanations might be unsuitable for achieving the purpose of transparency as desired in GDPR. This also relates to fairwashing (see \RCref{ch:fairwashing}). 
+
+
+\textbf{Global CFEs: } 
+\citet{hima-beyond-recourse-globalcfe} propose AReS to generate rule lists that act as global CFEs. \citet{ley-global-cfe-ares-improve} and \citet{kanamori-decision-tree-globalcfe} propose computationally more efficient implementation of \citet{hima-beyond-recourse-globalcfe}'s work.  \citet{carrizosa-global-cfe-tree-models} propose a mixed integer quadratic model to generate CFEs for a group of datapoints. 
+\citet{inverse-classification-multiple-algos} propose generating CFEs for a set of datapoints using lagrangian and subgradient methods. 
+\citet{Dhurandhar-global-model-consistent-with-cfe} propose a technique to train a globally interpretable model (for a black-box model) such that this model is consistent with the pertinent positives and pertinent negatives~\citep{dhurandhar_explanations_2018} of the training datapoints used to train the original model. 
+
+
+\textbf{Works proposing modifications to previous approaches: }
+\citet{RL-for-CFE-relace-paper} and \citet{RL-for-CFE-mcts-paper} use RL to generate CFE as was also proposed by \citet{verma2021amortized}. 
+\citet{rasouli2022CARE-CFE} propose a genetic algorithm to generate CFEs as was also proposed by \citet{dandl_multi-objective_2020}. 
+\citet{CFE_genetic_creditscorecards} propose to use genetic algorithm for CFE generation similar to \citet{dandl_multi-objective_2020}'s work. 
+\citet{another-genetic-algo-monteiro} propose extending \citet{dandl_multi-objective_2020}'s approach using U-NSGA-III evolutionary algorithm. 
+\citet{mahajan-work-extension-linear-interpolation} extend \citet{mahajan_preserving_2020}'s work by interpolating between the input and CFE datapoint to generate CFEs closer to the input datapoint. 
+\citet{semi-supervised-autoencoder-cfe} propose using a semi-supervised autoencoder instead of the traditional unsupervised autoencoder to generate CFEs close to the training data manifold. 
+\citet{Loreley-huang-2022} propose LORELEY that extends LORE \citep{guidotti_local_2018} to generate CFEs for multi-class classification problems and account for flow constraints. 
+\citet{student-moodle-cfe-cbr-technique} use feature importances provided by LIME to assist the case-based reasoning approach to generate CFEs. 
+\citet{Delaney2021Uncertainty-CFE} propose using trust scores to measure the out-of-distributionness of the CFEs. 
+\citet{guidotti-cfe-ensemble-of-explainers} propose using an ensemble of base CFE explainers to generate diverse CFEs. 
+
+\textbf{Benchmark and dataset curation: }
+\citet{cfe-algos-quantitative-comparison-survey} quantitatively compare 10 CFE generating approaches using 22 datasets and nine metrics. 
+\citet{pawelczyk2021CARLA-toolbox} and \citet{artelt-ceml-toolbox} have developed extensible toolboxes where several CFE approaches can be plugged in and compared on specific datasets. 
+
+
+\textbf{Various uncategorized works: }
+\citet{cfe-logic-programming-laurastate} talk about generating CFEs with real-world constraints on features and adaptability with updating ML models using constraint logic programming. 
+\citet{action-cfe-tahoun} propose to disentangle actions from feature modifications to address the lack of intervention data and appropriate action costs. The users should already describe the actions they are willing to take, and a model should just choose the minimum cost action that generates the CFE. 
+\citet{contrastive-xai-retail-forecast} propose a CFE approach to provide a lower and upper bound for the feature values that get a low prediction error from the ML model for a datapoint that originally had a high prediction error. 
+\citet{korikov-cfe-inverse-optimization1, korikov-cfe-inverse-optimization2} show how CFEs can be generated by using the generalization of inverse combinatorial optimization and solve it under two objectives. 
+\citet{predictive_multiplicity} provide a general upper bound on the cost of counterfactual explanations under the phenomenon of predictive multiplicity, wherein more than one trained models have the same test accuracy and there is no clear winner among them. 
+\citet{cfe-biology-multiclass} propose a hierarchical decompositions-based method to obtain CFEs for multi-class classification problems. 
+\citet{declarative-CFE} and \citet{cfe-for-monotone-obj} propose brute force approaches to generate CFEs. 
+% and their approach is restricted to categorical features. 
+% \citet{cfe-for-monotone-obj} propose another brute force approach to generate a set of CFEs provided that the objective function is monotonic. 
+
+
+
+% -----------------------------------
+% \citet{what-if-tool} developed a model-agnostic interactive visual tool for letting developers and practitioners visually examine the effect of changes in various features. 
+% This tool has added functionality for exploring data like partial dependence plots, fairness, and performance evaluation.     % I can skip this tool. 
+% \citet{fernandez-loria_explaining_2020} point out at the insufficiency of feature importance methods for explaining a model's predictions, and substantiate it with a synthetic example. 
+% They generate counterfactuals by removing features instead of modifying feature values. 
+% There exist papers which do not propose novel algorithms to generate counterfactuals, but explore other aspects about it -- we mention those papers in this section. (We also relegate discussion about papers that propose algorithms similar to ones proposed by previous approaches to this section.) 

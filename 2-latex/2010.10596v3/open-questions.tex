@@ -1,0 +1,232 @@
+\section{Open Questions and Research Progress for solving them}
+
+In the first version of this survey paper, we delineated the open questions and challenges yet to be tackled by the existing works pertaining to CFEs \citep{cfe-challenges-paper}. In this version, we supplement this section with the research progress made towards solving them and new research challenges. 
+
+\begin{challenge}\label{ch:unification}
+Unify counterfactual explanations with traditional ``explainable AI.''
+\end{challenge}
+Although counterfactual explanations have been credited to eliciting causal thinking and providing actionable feedback to users, they do not tell which feature(s) was the principal reason for the original decision and why. It would be nice if, along with giving actionable feedback, counterfactual explanations also gave the reason for the original decision, which can help applicants understand the model's logic. This is addressed by traditional ``explainable AI'' methods like LIME~\citep{ribeiro_why_2016}, Anchors~\citep{Ribeiro2018Anchors}, Grad-CAM~\citep{grad-cam}. 
+
+\progress
+\citet{guidotti_local_2018} have attempted this unification, as they first learn a local decision tree and then interpret the inversion of decision nodes of the tree as counterfactual explanations. However, they do not show the CFEs they generate, and their technique also misses other desiderata of counterfactuals (see~\cref{sec:themes}). 
+\citet{unifying-cfe1-divyat} propose \textit{necessity} and \textit{sufficiency} as the two important properties of an explanation. Feature attribution explanations find the feature values that are sufficient for a prediction, while CFEs find the feature values that are necessary for a prediction. They propose methods to find the necessity and sufficiency of any feature subset and discuss how that aligns with finding CFEs. 
+\citet{galhotra-sigmod-cfe} propose \textsc{Lewis} that also emphasizes the \textit{necessity} and \textit{sufficiency} scores of a feature subset in finding its global importance and in generating a CFE for local explainability. 
+\citet{unifying-cfe2-deeplift} propose to use DeepLIFT to assign contribution scores to the features that changed in a counterfactual datapoint. 
+\citet{ramon-cfe-comparison-text+behavior} rank the feature importances using LIME and SHAP, and then remove the features in decreasing order of importance until a CFE is found. 
+\citet{DisCERN-use-shap-for-cfe} propose to use methods like LIME and SHAP to find feature importances and then replace the features in decreasing order of importance with the values borrowed from the nearest unlike neighbor (case-based reasoning approach). 
+\citet{CF-Shap-paper} propose to change the background distribution used to compute the Shapley values to make the feature attribution amount to the counterfactual-ability of the features, i.e., changing a feature with higher attribution would have a higher probability of changing the prediction. 
+\citet{SCOUT_cfe_images} propose to use the discriminant attribution explanations as a way to produce CFEs for images. 
+\citet{student-moodle-cfe-cbr-technique} use LIME to assist case-based reasoning techniques to generate CFEs. 
+\citet{use-cfe-instead-of-erasure} propose using counterfactual-ability of features as a metric for their feature importance. 
+
+
+\begin{challenge}\label{ch:discrete}
+Provide counterfactual explanations as discrete and sequential steps of actions. 
+\end{challenge}
+Most counterfactual generation approaches return the modified datapoint, which would receive the desired classification. 
+The modified datapoint (state) reflects the idea of instantaneous and continuous actions, but in the real world, actions are discrete and often sequential. 
+Therefore the counterfactual generation process must take the discreteness of actions into account and provide a series of actions that would take the individual from the current state to the modified state, which has the desired class label. 
+
+\progress
+\citet{naumann2021consequenceaware} argue that to help an individual achieve the desired goal, CFEs should be provided as a sequential step of actions instead of just providing the final goal. \citet{sequential-CFE} conduct a user study to show the high preference for a sequential step of actions steps over a single-step goal. 
+\citet{ramakrishnan_synthesizing_2019} propose a program synthesis based technique to generate such sequences. 
+\citet{Ordered-CFE-Kanamori} propose a mixed-integer based programming method and \citet{verma2021amortized} propose an RL-based method that generates ordered sequences of actions as a CFE. 
+
+
+\begin{challenge}
+Extend counterfactual explanations beyond classification.
+\end{challenge}
+
+\progress
+Recent work has been extending counterfactual explanations to different tasks and model architectures.
+\citet{cf-regression} propose a Bayesian optimization-based technique for generating CFEs for regression problems. 
+\citet{CF-GNN1} propose an RL-based approach for generating CFEs for graph neural networks, which are used to predict chemical molecule properties. 
+\citet{cf-timeseries1} propose a case-based reasoning approach to generate CFEs for a time-series classifier. 
+See \Cref{sec:otherdatamodality} and \Cref{sec:otherapplications} for a list of all the approaches. 
+
+
+\begin{challenge}\label{ch:interactive}
+Counterfactual explanations as an interactive service to the applicants. 
+\end{challenge}
+Counterfactual explanations should be provided as an interactive interface, where an individual can come at regular intervals, inform the system of the modified state, and get updated instructions to achieve the counterfactual state. 
+This can help when the individual could not precisely follow the earlier advice for various reasons. 
+
+\progress
+\citet{GAMUT} developed an interactive user-interface for providing explanations to data scientists. They found out that data scientists used interactivity as the primary mechanism for exploring, comparing, and explaining predictions.
+\citet{glass-box-voice-assistant} propose to enhance ML explanations with a voice-assisted interactive service. 
+\citet{akula-cfe-CX-ToM-images-interactivity} propose an approach that explains an ML model using an interactive sequence of CFEs. 
+\citet{skyline-cfe-interactive} propose refining the CFEs for different feature change costs based on user interactions. 
+
+\begin{challenge}\label{ch:incomplete-causal}
+The ability of counterfactual explanations to work with incomplete---or missing---causal graphs. 
+\end{challenge}
+Incorporating causality in the counterfactual generation is essential for the CFEs to be grounded in reality. 
+Complete causal graphs and structural equations are rarely available in the real world, and therefore the algorithm should be able to work with incomplete causal graphs. 
+
+\progress
+\citet{mahajan_preserving_2020}'s approach was the first to be compatible with incomplete causal graphs. Now other works like \citet{galhotra-sigmod-cfe}, \citet{verma2021amortized}, \citet{schleich2021geco}, \citet{gan_cfe_amortized} can also work with partial causal graphs. 
+
+
+\begin{challenge}\label{ch:missing-feature}
+The ability of counterfactual explanations to work with missing feature values. 
+\end{challenge}
+Along the lines of an incomplete causal graph, counterfactual explanation algorithms should also be able to handle missing feature values, which often happens in the real world~\citep{missing-data}. 
+
+
+\begin{challenge}\label{ch:scale}
+Scalability and throughput of counterfactual explanations generation. 
+\end{challenge}
+As we see in \cref{tab:main-table}, most approaches need to solve an optimization problem to generate one counterfactual explanation. 
+Some papers generate multiple counterfactuals while optimizing once, but they still need to optimize separately for different input datapoints. However, for industrial deployment, the generation should be more scalable.  
+
+\progress
+\citet{mahajan_preserving_2020} learn a VAE which can generate multiple CFEs for any given input datapoint after training. Therefore, their approach is highly scalable and is termed as ``amortized inference''. 
+\citet{verma2021amortized} proposed an RL-based technique, FastAR, that also generates amortized CFEs. \citet{conditional_gan_cfe_looveren}, \citet{rl_cfe_approach2_amortized}, \citep{gan_cfe_amortized}, \citet{hima-beyond-recourse-globalcfe}, and \citet{nemirovsky-hired-people-cfe-countergan} also propose approaches to this end. 
+
+
+\begin{challenge}\label{ch:bias-in-cfe}
+Counterfactual explanations should account for bias in the classifier. 
+\end{challenge}
+Counterfactuals potentially capture and reflect the bias in the models. 
+To underscore this as a possibility, \citet{Ustun19:Actionable} experimented on the difference in the difficulty of attaining a counterfactual state across genders, which clearly showed a significant difference. 
+More work must be done to find how equally easy counterfactual explanations can be provided across different demographic groups, or how adjustments should be made to the prescribed changes to account for the bias. 
+
+\progress
+\citet{hima-beyond-recourse-globalcfe} generate recourse rules for a subgroup that they use to detect model biases. 
+\citet{Gupta2019EqualRecourse} propose adding a regularizer while training a classifier that encourages the classifier to maintain a similar distance of the decision boundary from different demographic groups, thereby facilitating the opportunity of equal recourse across demographic groups (which is their definition of fairness). 
+\citet{vonKgelgen2020EqualRecourse2} extend this fairness notion when the distance between the recourse is measured in a causal manner.  
+\citet{galhotra-sigmod-cfe} propose LEWIS that uses CFEs to identify racial bias in COMPAS and gender in Adult datasets. 
+\citet{Dash-evaluate-bias-images} propose using CFEs to detect bias in image classifiers and counterfactual regularizer to counteract that bias. 
+
+\begin{challenge}\label{ch:robust}
+Generate robust counterfactual explanations \citep{another-robustness-cfe-ferrario, mishra-cfe-robustness-survey}. 
+\end{challenge}
+Counterfactual explanation optimization problems force the modified datapoint to obtain the desired class label. However, the modified datapoint could be labeled either in a robust manner or due to the classifier's non-robustness, e.g., an overfitted classifier. \citet{issues_posthoc} term this as the \emph{stability} property of a counterfactual.  
+There are three kinds of robustness needs: 1) robustness to model changes when models are retrained, for example, 2) robustness to the input datapoint (two individuals with a slight change in features should be given similar CFEs), and 3) robustness to small changes in the attained CFE (a CFE with minor changes to the originally suggested CFE should also be accepted). 
+%This can generate counterfactuals that might be non-sensical and have the desired class label only because of the classifier's artifact. 
+
+%This is specifically a challenge for approaches that solve an optimization problem each time they generate a counterfactual (see \RCref{ch:scale}.)  %We see potential overlap between this nascent literature and the certifiability literature from the adversarial machine learning community. 
+
+\progress
+\citet{slack2021manipulated} underscore this challenge by showing that small perturbations in the input datapoints can result in drastically different CFEs. 
+\citet{rawal2021robust1} further emphasize this challenge by empirically demonstrating the invalidation of already prescribed recourses when the ML model gets retrained on datasets with temporal or geospatial distribution shifts. 
+\citet{Artelt2021Evaluating-robustness} evaluate the robustness of closest CFEs when contrasted with CFEs generated with the data manifold constraint. 
+\citet{stress-test-creditscore} propose the framework to measure the robustness of models by purposing generated CFEs as adversarial attack datasets. 
+\citet{robustness-KC-score-is-good} empirically show that non-robust CFEs encounter a higher cost of change when adverse perturbations are applied to the datapoint, thus concluding that robustness in CFEs should be considered. 
+
+% Techniques proposing a solution. 
+\citet{upadhyay2021robust2} propose a technique named ROAR that uses adversarial training to generate recourses robust to changes in an ML model that is retrained on a distributionally shifted training dataset. 
+\citet{dominiguez-olmedo-cfe-robustness} show that the CFEs that just cross the decision boundary are usually non-robust and formulate an optimization problem that generates robust recourse for linear models and neural networks. 
+\citet{probabilistically-robust-cfe-hima-group} propose a technique named PROBE that generates robust CFEs while letting the users decide the trade-off between the CFE invalidation risk and its cost. 
+\citet{black2022consistent-robust-cfe} argue that robust CFEs should have high confidence neighborhoods with small Lipschitz constants, and propose a Stable Neighbor Search algorithm to that end. 
+\citet{nguyen2022distributionally-robustcfe} propose an algorithm to generate robust CFEs by considering a distribution over the parameters of the model if retrained. 
+\citet{robustness-metric-paper-jpmorgan} propose counterfactual stability (the lower bound of the predicted class probability for the sampled datapoints in the neighborhood of a given CFE) as a metric for filtering robust CFEs. 
+\citet{robust-CFE-GNN} propose a technique to generate robust CFEs for graph neural networks. 
+
+
+% \citet{uncertainty-CFEs-robustness} conduct a study on CFEs generation and showed CFEs that are generated from 4 of 5 datasets have high epistemic uncertainty (not robust).
+
+
+
+% Non-stationarity: data drift of the feature space, or the classifier changes over time.
+\begin{challenge}\label{ch:dynamics}
+Counterfactual explanations should handle dynamics (data drift, classifier update, applicant's utility function changing, etc.)
+\end{challenge}
+All counterfactual explanation papers we review assume that the underlying black box is monotonic and does not change over time. However, this might not be true; credit card companies and banks update their models as frequently as 12-18 months~\citep{bank-models}. Therefore counterfactual explanation algorithms should take data drift, the dynamism and non-monotonicity of the classifier into account. 
+
+
+\begin{challenge}\label{ch:user-prefs}
+Counterfactual explanations should capture the applicant's preferences. 
+\end{challenge}
+Along with the distinction between mutable and immutable features (finely classified into actionable, mutable, and immutable), counterfactual explanations should also capture preferences specific to an applicant. This is important because the ease of changing different features can differ across applicants. 
+
+\progress
+\citet{mahajan_preserving_2020} captures the applicant's preferences using an oracle, but that is expensive and is still a challenge. \citet{hima-beyond-recourse-globalcfe} use the Bradley-Terry model to learn the pairwise cost for each feature pair and hence the preference among them. 
+\citet{user-specific-cost} argue that assuming each user's cost of changing different features is the same is unrealistic. They propose asking for the user's cost function or computing the expectation by sampling cost functions from a distribution. 
+
+\begin{challenge}
+Counterfactual explanations should also inform the applicants about what must not change
+\end{challenge}
+Suppose a CFE advises someone to increase their \emph{income} but does not tell that their \emph{length of last employment} should not decrease. To increase their income, the applicant who switches to a higher-paying job may find themselves in a worse position than earlier. Thus by failing to disclose what must not change, an explanation may lead the applicant to an unsuccessful state \citep{hidden_assumptions}. This corroborates \RCref{ch:interactive}, whereby an applicant might be able to interact with a platform to see the effect of a potential real-world action they are considering taking to achieve the counterfactual state. 
+
+\begin{challenge}\label{ch:privacy}
+Preserving model privacy. 
+\end{challenge}
+Privacy attacks on ML models can come in two major forms: member inference and model extraction. 
+Both of these privacy attacks can be enhanced due to the provision of CFEs. \citet{modelprivacy-CFE} empirically demonstrate that adversaries can train a surrogate model with very high fidelity to the original model (i.e., model extraction attack) with as few as 1,000 queries to the model (which is required during CFE generation). The problem is further aggravated when diverse CFEs are provided. 
+\citet{modelprivacy-generalxai} have demonstrated that gradient-based explanations methods leak a lot of information and make the models vulnerable to membership inference attacks. 
+\citet{Miura2021MEGEX-privacy-attack-cfe} propose MEGEX, a data-free model extraction attack that learns a surrogate model without access to its training data by training a generative model. 
+\citet{DualCF-model-extraction} propose using the CFE of a CFE to train a surrogate model and show that it is more efficient in model extraction when compared to \citep{modelprivacy-CFE}. 
+
+
+\begin{challenge}\label{ch:fairwashing}
+Guarding against fairwashing. 
+\end{challenge}
+\citet{ulrich-fairwashingxai2019} and \citet{ulrich-fairwashingxai2021} have pointed out the risk of an adversary using model explanations to rationalize a model's decisions and obscure its bias. It remains to be seen if the fair recourse approaches can guard against fairwashing. 
+
+
+\begin{challenge}
+CFE interpretability with engineered features \citep{schleich2021geco}. 
+\end{challenge}
+Most current CFE approaches assume that the features they change are directly input to the ML model. This might not be the case -- it is known that model developers use highly engineered features for training the ML models. In this light, approaches need to be developed that take feature engineering into account (potentially a non-differentiable step). Approaches that work with black-box access will naturally be able to work in this setting. 
+
+
+\begin{challenge}
+Handling of categorical features in counterfactual explanations
+\end{challenge}
+Different papers have come up with various methods to handle categorical features, like converting them to one-hot encoding and then enforcing the sum of those columns to be 1 using regularization or a hard constraint, or clamping an optimization problem to a specific categorical value, or leaving them to be automatically handled by genetic approaches and SMT solvers. 
+Measuring distance in categorical features is also not obvious. Some papers use an indicator function, which equates to 1 for unequal values and 0 if the same; other papers convert to one-hot encoding and use standard distance metrics like L1/L2 norm, or use the distance in Markov chains \citep{forster-capturing-2021}. 
+Therefore none of the methods developed to handle categorical features are obvious; future research must consider this and develop appropriate methods. 
+
+\begin{challenge}\label{ch:user-study}
+Evaluate counterfactual explanations using a user study. 
+\end{challenge}
+The evaluation for counterfactual explanations must be done using a user study because evaluation proxies (see~\cref{sec:eval}) might not be able to precisely capture the psychological and other intricacies of human cognition on the ease of actionability of a counterfactual. \citet{if_only_better_CFE_keane} emphasize the importance of user studies in the context of CFEs. 
+\progress
+\citet{forster2020evaluating-xai-user-study} conduct a user study with 144 participants to understand the format of explanation they prefer. They conclude that users prefer concrete, consistent, relevant explanations, and lengthy explanations if they are concrete. 
+\citet{forster-capturing-2021} conduct a user study with 46 participants who were asked to rate the realisticness of the CFEs generated by theirs and a baseline approach. Using statistical tests, they concluded that the CFEs generated by their approach were perceived to be more real and typical. 
+\citet{hima-beyond-recourse-globalcfe} conduct a user study with 21 participants who were asked to detect a bias in the recourse summaries for demographic groups. 
+\citet{kanamori-decision-tree-globalcfe} conduct a user study with 35 participants to compare their global CFE generating technique with that of \citet{hima-beyond-recourse-globalcfe}. 
+\citet{sequential-CFE} conduct a user study with 54 participants and found that most users prefer specific directives over generic and non-directive explanations. 
+\citet{user-study-cfe-causal-diff-keane} conduct a user study with 127 participants and found that counterfactual explanations elicited higher trust and satisfaction than causal explanations. 
+\citet{CFE-user-study-judges} conduct a user study with 8 U.S. state court judges to understand their response to CFEs from pretrial risk assessment instruments (PRAI). They conclude that judges ignored the CFEs and focused on the factual features of the defendant. 
+\citet{keep-your-friends-close-cfe} conduct a user study with 74 users in an interactive game setting and found that users benefit less from receiving computationally plausible CFEs than the closest CFEs (measured using feature distance). 
+\citet{Zhang-CFE-user-study} conduct a user study with 200 users to check their understanding of global, local, and CF explanations. 
+\citet{cfe-user-study-quickdraw} conduct a user study on 1070 participants to understand how users perceive explanations when provided examples from the desired class vs. when provided examples from all other classes. 
+
+
+\begin{challenge}\label{ch:visual}
+Counterfactual explanations should be integrated with data visualization interfaces. 
+\end{challenge}
+Counterfactual explanations will directly interact with consumers with varying technical knowledge levels; therefore, counterfactual generation algorithms should be integrated with visualization interfaces. We already know that visualization can influence human behavior \citep{Correll19:Ethical}, and a collaboration between machine learning and HCI communities could help address this challenge. 
+
+\progress
+\citet{what-if-tool, dece-visualcfe, vice-visualcfe, advice-visualcfe, Leung-XAI-Customer-Churn-Interface} have developed interactive graphical user interfaces for displaying CFEs. 
+DECE~\citep{dece-visualcfe} also summarizes CFEs for subgroups that can help detect model biases, if any. 
+\citet{Rivelo-visualcfe} develop a visualization tool for CFEs for text classification models. 
+\citet{GAMUT} also build a visual interactive user interface for providing model explanations. 
+
+
+\begin{challenge}\label{ch:multi-agent}
+Generating optimal recourses when considering a multi-agent scenario. 
+\end{challenge}
+\citet{multi-agent-recourse} demonstrate the non-optimality of recourses generated when a single agent's interest is considered in a multi-agent scenario like the prisoner's dilemma. In the real world, an agent's actions affect other agents, hence generating recourses that consider the interests of multiple agents would be useful. 
+
+\begin{challenge}
+Incentivize users to improve features in non-manipulative ways. 
+\end{challenge}
+An approach that provides a recourse to users might want to prevent the ``gamification'' of the model (when users manipulate simple features like the purpose of a loan to get approved). This also protects the ML models from adversarial robustness attacks. 
+
+\progress
+\citet{Chen2020Strategic-recourse-linear} propose the optimization objective for linear classification models when the goal is to develop an accurate model that encourages actual feature improvement for users. They categorize features into three categories: improvement, manipulative, and immutable. Users should be encouraged to change the improvement features, not the manipulative ones when optimizing for recourse. 
+\citet{meaningful-recourse-konig} suggest using causality to generate meaningful recourses and prevent gamification of the model. 
+
+
+
+\begin{challenge}\label{ch:regulatory-colab}
+Strengthen the ties between machine learning and regulatory communities. 
+\end{challenge}
+A joint statement between the machine learning community and regulatory community (OCC, Federal Reserve, FTC, CFPB) acknowledging successes and limitations of where counterfactual explanations will be adequate for legal and consumer-facing needs and would improve the adoption and use of counterfactual explanations in critical software. 
+
+\progress
+\citet{non-asimov-ai-regulation-paper} talk about how regulation and policies need to adapt to how ML models can explain their decisions. 
