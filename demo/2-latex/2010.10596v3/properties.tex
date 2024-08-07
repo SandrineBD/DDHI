@@ -1,0 +1,97 @@
+\section{Assessment of the approaches on counterfactual properties}
+\label{sec:table}
+
+For easy comprehension and comparison, we identify several properties that are important for a counterfactual generation algorithm. 
+For all the collected papers which propose an algorithm to generate counterfactual explanations, we assess the algorithm they propose against these properties. 
+The results are presented in~\cref{tab:main-table}. 
+For papers that do not propose new algorithms and discuss related aspects of counterfactual explanations or modifications to previous methods are mentioned in \cref{sec:other_works}. 
+The methodology we used to collect the papers is given in~\cref{sec:method}. 
+
+
+\subsection{Properties of counterfactual algorithms}
+This section expounds on the key properties of a counterfactual explanation generation algorithm. The properties form the columns of ~\cref{tab:main-table}. 
+\begin{enumerate}[leftmargin=*]
+    
+    \item \emph{Model access}: The counterfactual generation algorithms require different levels of access to the underlying model for which they generate counterfactuals. We identify three distinct access levels -- access to complete model internals, access to gradients, and access to only the prediction function (\emph{black-box}). 
+    Access to the complete model internals is required when the algorithm uses a solver-based method like, mixed integer programming~\citep{russell_efficient_2019,Ustun19:Actionable,karimi_model-agnostic_2020,karimi_algorithmic_2020,Kanamori2020:DACE} or if they operate on decision trees~\citep{Tolomei2017:Interpretable,fernandez-random:2020,lucic-actionable:2020, oblique-tree-cfe, scaling_Nearest_CFE} which requires access to all internal nodes of the tree.
+    A majority of the methods use a gradient-based algorithm to solve the optimization objective, modifying the loss function proposed by~\citet{wachter_counterfactual_2017}, but this is restricted to differentiable models only. 
+    % One constraint that comes with using this method is the restriction to differentiable models only. 
+    % The third class of methods only require access to the prediction function of the model. 
+    Black-box approaches use gradient-free optimization algorithms such as Nelder-Mead~\citep{grath_interpretable_2018}, growing spheres~\citep{medina_comparison-based_2018}, FISTA~\citep{dhurandhar_model_2019,van_looveren_interpretable_2020} ASP ~\citep{declarative-CFE}, or genetic algorithms~\citep{inverse-classification2,sharma_certifai_2019,dandl_multi-objective_2020} to solve the optimization problem. 
+    Finally, some approaches do not cast the goal into an optimization problem and solve it using heuristics~\citep{guidotti_local_2018,rathi-generating:2019,white_measurable_2019,keane2020good}.
+    \citet{poyiadzi_face_2020} propose FACE, which uses Dijkstra's algorithm~\citep{dijkstra1959} to find the shortest path between existing training datapoints to find counterfactual for a given input. Hence, this method does not generate new datapoints. \citet{Fraunhofer-pure-region-sampling} and \citet{Pierre-tree-ensemble-pure-region} divide the feature space into `pure' regions where all datapoints (by sampling) belong to one class and then use graph traversing techniques to find the closest CFEs.  
+    
+    Distinct from the three levels of model access, there exist approaches that propose new training routines. \citet{alexis-ross-training-methodology-cfe} propose adding adversarial loss during training of the ML model to have a higher probability of having a recourse for the training datapoints. (After training, any CFE generating method can be used.) 
+    \citet{guo-cfe-counternet} propose CounterNet, a novel architecture that predicts the class and generates the CFE of a datapoint when trained from scratch. \citep{sum-product-networks-cfe} train a sum-product network that acts as both a classifier and density estimator and uses that to generate CFEs. 
+    
+    \item \emph{Model agnostic}: This column describes the domain of models a given algorithm can operate on. 
+    For example, gradient-based algorithms can only handle differentiable models, and the algorithms based on solvers require linear or piece-wise linear models~\citep{russell_efficient_2019,Ustun19:Actionable,karimi_model-agnostic_2020,karimi_algorithmic_2020,Kanamori2020:DACE}, some algorithms are model-specific and only work for those models like tree ensembles~\citep{Tolomei2017:Interpretable,Kanamori2020:DACE,fernandez-random:2020,lucic-actionable:2020}. 
+    Black-box methods have no restriction on the underlying model and are, therefore, model-agnostic. 
+
+    \item \emph{Optimization amortization}:  
+    Among the collected papers, the proposed algorithm mostly returned a single counterfactual for a given input datapoint.
+    %Among all the papers we collected, we found that algorithms proposed by most of the papers, when given an input datapoint, returned a single counterfactual. 
+    Therefore these algorithms require solving the optimization problem for each counterfactual that was generated, that too, for every input datapoint. 
+    A smaller number of the methods are able to generate multiple counterfactuals (generally diverse by some metric of diversity) for a single input datapoint; therefore, they require to be run once per input to get several counterfactuals~\citep{guidotti_local_2018,russell_efficient_2019,sharma_certifai_2019,mothilal_explaining_2020,mahajan_preserving_2020,karimi_model-agnostic_2020,dandl_multi-objective_2020,fernandez-random:2020,oblique-tree-cfe}. 
+    \citet{mahajan_preserving_2020}'s approach learns the mapping of datapoints to counterfactuals using a variational auto-encoder (VAE)~\citep{doersch-autoencoder}. 
+    Therefore, once the VAE is trained, it can generate multiple counterfactuals for all input datapoints, without solving the optimization problem separately and is thus very fast. 
+    \citet{verma2021amortized} and \citet{rl_cfe_approach2_amortized} train a reinforcement learning model to learn the actions that need to be taken to generate CFEs for a data distribution. Hence, these approaches are also amortized. 
+    \citep{gan_cfe_amortized} trains a CGAN to synthesize CFEs with umbrella sampling; hence, their approach is also amortized. \citet{conditional_gan_cfe_looveren} also train a GAN-based model that is amortized. 
+    \citet{schleich2021geco} partially evaluate (amortize) the classifier for the static features, hence speeding up the CFE generation. 
+    We report two aspects of optimization amortization in the table. 
+    \begin{itemize}%[leftmargin=0.3em]
+        \item  \emph{Amortized Inference}: This column is marked \texttt{Yes} if the algorithm can generate counterfactuals for multiple input datapoints without optimizing separately for them; otherwise, it is marked \texttt{No}. 
+        \item  \emph{Multiple counterfactuals (CF)}: This column is marked \texttt{Yes} if the algorithm can generate multiple counterfactuals for a single input datapoint; otherwise, it is marked \texttt{No}. 
+    \end{itemize}
+
+    \item \emph{Counterfactual (CF) attributes}: These columns evaluate algorithms on sparsity, data manifold adherence, and causality. 
+    
+    Among the collected papers, methods using solvers explicitly constrain sparsity~\citep{Ustun19:Actionable,karimi_model-agnostic_2020}, black-box methods constrain L0 norm of counterfactual and the input datapoint~\citep{medina_comparison-based_2018,dandl_multi-objective_2020}. 
+    Gradient-based methods typically use the L1 norm of counterfactual and the input datapoint. 
+    Some of the methods change only a fixed number of features~\citep{white_measurable_2019,keane2020good}, change features iteratively~\citep{Grace:2019,Epistemic_and_Aleatoric_uncertainty, verma2021amortized, Gradual_Construction}, or flip the minimum possible split nodes in the decision tree~\citep{guidotti_local_2018} to induce sparsity. 
+    Some methods also induce sparsity post-hoc~\citep{medina_comparison-based_2018,mothilal_explaining_2020}. 
+    This is done by sorting the features in ascending order of relative change and greedily restoring their values to match the values in the input datapoint until the prediction for the CFE is still different from the input datapoint.
+    
+    % Some recent papers have raised concerns that counterfactual explanations ought to similar to the training data in order to be realistic. 
+    Adherence to the data manifold has been addressed using several different approaches, like training VAEs on the data distribution~\citep{dhurandhar_explanations_2018,joshi_towards_2019,van_looveren_interpretable_2020,mahajan_preserving_2020}, constraining the distance of a counterfactual from the $k$ nearest training datapoints~\citep{dandl_multi-objective_2020,Kanamori2020:DACE, prototype_based_cfe}, directly sampling points from the latent space of a VAE trained on the data, and then passing the points through the decoder~\citep{pawelczyk_learning_2020}, using an ensemble of model to capture the predictive entropy~\citep{Epistemic_and_Aleatoric_uncertainty}, using an Kernel Density Estimator (KDE) to estimate PDF of underlying data manifold \citep{coherent_CFEs}, using cycle consistency loss in GAN~\citep{conditional_gan_cfe_looveren}, mapping back to the data domain~\citep{Grace:2019}, using a combination of existing datapoints~\citep{keane2020good}, using Gaussian Mixture Models to approximate the probability of in-distributionness~\citep{efficient-contrastive}, or by using feature correlations~\citep{convex_optimization_cfe}, or by simply not generating any new datapoint~\citep{poyiadzi_face_2020}. 
+    
+    % Another important consideration is to encode any strong prior knowledge we might have about the features. Specifically, causal relations between features should be taken into account while generating counterfactuals. 
+    The relation between different features is represented by a directed graph between them, which is termed as a causal graph~\citep{causality:Pearl}. 
+    Out of the papers that have addressed this concern, most require access to the complete causal graph~\citep{karimi_algorithmic_2020,karimi-imperfect:2020} (which is rarely available in the real world), while~\citet{mahajan_preserving_2020,verma2021amortized, gan_cfe_amortized,prototype_based_cfe} can work with partial causal graphs.
+    
+    These three properties are reported in the table. 
+    \begin{itemize}%[leftmargin=0.3em]
+        \item  \emph{Sparsity}: This column is marked \texttt{No} if the algorithm does not consider sparsity, else it specifies the sparsity constraint. 
+        \item  \emph{Data manifold}: This column is marked \texttt{Yes} if the algorithm forces the generated counterfactuals to be close to the data manifold by some mechanism; otherwise, it is marked \texttt{No}. 
+        \item  \emph{Causal relation}: This column is marked \texttt{Yes} if the algorithm considers the causal relations between features when generating counterfactuals; otherwise, it is marked \texttt{No}. 
+    \end{itemize}
+
+    
+
+    \item \emph{Counterfactual (CF) optimization (opt.) problem attributes}: These are a few attributes of the optimization problem. 
+    
+    % An important fact for a counterfactual to consider is the mutability and actionability of a feature.
+    % As we previously mentioned, immutable features should not be subject to change in a counterfactual. 
+
+    Out of the papers that consider feature actionability, most classify the features into immutable and mutable types. 
+    \citet{karimi_algorithmic_2020} and \citet{inverse-classification2} categorize the features into immutable, mutable, and actionable types. 
+    Actionable features are a subset of mutable features. They point out that certain features are mutable but not directly actionable by the individual, e.g., \emph{CreditScore} cannot be directly changed; it changes as an effect of changes in other features like income, credit amount. 
+    \citet{mahajan_preserving_2020} uses an oracle to learn the user preferences for changing features (among mutable features) and can also learn hidden preferences. %which can be hidden as well. 
+    
+    Most tabular datasets have both continuous and categorical features. Performing arithmetic over continuous features is natural, but handling categorical variables in gradient-based algorithms can be complicated. 
+    Some algorithms cannot handle categorical variables and filter them out~\citep{medina_comparison-based_2018,lucic-actionable:2020}. 
+    \citet{wachter_counterfactual_2017} proposed clamping all categorical features to each of their values, thus spawning many processes (one for each value of each categorical feature), leading to scalability issues. 
+    Some approaches convert categorical features to one-hot encoding and then treat them as numerical features. In this case, maintaining one-hotness can be challenging. 
+    Some use a different distance function for categorical features, which is generally an indicator function (1 if a different value, else 0).  \citep{coherent_CFEs} use Markov chain transitions to encode categorical distances.
+    \citet{gan_cfe_amortized} use Gaussian mixture models to normalize the continuous features and Gumbel-Softmax to relax categorical features into continuous ones.
+    Genetic algorithms, evolutionary algorithms, and SMT solvers can naturally handle categorical features. 
+    We report these properties in the table. 
+    \begin{itemize}%[leftmargin=*]
+        \item  \emph{Feature preference}: This column is marked \texttt{Yes} if the algorithm considers feature actionability, otherwise marked \texttt{No}. 
+        \item  \emph{Categorical distance function}: This column is marked \texttt{-} if the algorithm does not use a separate distance function for categorical variables, else it specifies the distance function. 
+    \end{itemize}
+
+\end{enumerate}
+
+\input{table}
+

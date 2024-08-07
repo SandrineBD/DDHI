@@ -1,0 +1,76 @@
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{url}
+
+% \hypersetup{}
+\def\UrlBreaks{\do\/\do-}
+
+% \usepackage[raggedright]{titlesec}
+\usepackage{amsmath}
+% \usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{cleveref}
+\usepackage{color}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{balance}
+\usepackage{xspace}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{mathtools}
+
+% \usepackage[flushleft]{threeparttable}
+
+% \usepackage{footnote}
+\usepackage{footnotehyper}      % for clicking the footnote link. 
+\makesavenoteenv{tabular}
+\makesavenoteenv{table*}
+% \usepackage[english]{babel}
+% \usepackage{tablefootnote}
+\usepackage{footnotebackref}
+\usepackage{hyperref}
+\usepackage{longtable}
+% \usepackage{supertabular}
+% \usepackage{xtab}     % None of these are working. 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    % citebordercolor=Violet,
+    % filebordercolor=Red,
+    % linkbordercolor=Blue
+    urlcolor=cyan,
+    breaklinks=true
+}
+\urlstyle{same}
+
+\renewcommand{\arraystretch}{1.5} % space between rows of the table. 
+\newcommand{\todo}[1]{{\color{red}\bfseries [[#1]]}}
+\definecolor{amber}{rgb}{1.0, 0.75, 0.0}
+\setlength\parindent{0pt}       % no indent entire file 
+\newcommand{\topic}[1]{}%{\color{amber} Topic: #1}}
+% These are for comments for all 3 of us. SV - Sahil, KH - Keegan, jpd - John. I just filled in any color, feel free to change. 
+\newcommand{\SV}[1]{{\color{cyan} SV: #1}}  
+\newcommand{\vb}[1]{{\color{magenta} VB: #1}}
+\newcommand{\jpd}[1]{{\color{blue} JD: #1}}
+
+\newcommand{\alg}[1]{Algorithm~\ref{#1}}
+\newcommand{\fig}[1]{Figure~\ref{#1}}
+\newcommand{\tab}[1]{Table~\ref{#1}}
+\newcommand{\sect}[1]{\S\ref{#1}}
+\newcommand{\mc}[2]{\multicolumn{#1}{c}{#2}}
+\newcommand{\vbarmc}[2]{\multicolumn{#1}{|c}{#2}}
+\newcommand{\functionname}[1]{\texttt{#1}}
+\newcommand{\norm}[1]{\left\|#1\right\|_1}
+\newcommand{\twonorm}[1]{\|#1\|_2^2}
+\newcommand{\papers}{more than 350\xspace}
+\newcommand{\progress}[0]{\vspace{4pt}\textcolor{blue}{\textbf{Progress: }} }
+
+
+\newtheorem{challenge}{Research Challenge}
+\newcommand{\RCref}[1]{\textbf{RC\ref{#1}}}
+
+% \newtheorem{progress}{Progress: }

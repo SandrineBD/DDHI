@@ -1,0 +1,69 @@
+\section{Evaluation of counterfactual generation algorithms}
+\label{sec:eval}
+% \subsection{Commonly used algorithms to solve the optimization problem for generation of CFEs} % This has been partially covered in the "Optimization required section", and the methods are so varied that it is hard to summarize them. 
+This section lists the common datasets used to evaluate counterfactual generation algorithms and the metrics on which they are typically evaluated and compared. 
+
+\subsection{Commonly used datasets for evaluation}
+The datasets used in the evaluation in the papers we review can be categorized into tabular and image datasets. Not all methods support image datasets. 
+Some of the papers also used synthetic datasets for evaluating their algorithms, but we skip those in this review since they were generated for a specific paper and also might not be available. 
+Common datasets in the literature include:
+\begin{itemize}[leftmargin=*]
+    \item \emph{Image}: MNIST~\citep{lecun-mnisthandwrittendigit-2010}, EMNIST~\citep{EMNIST-data}, CelebA~\citep{celebA_data}, CheXpert~\citep{chexpert-data}, ImageNet~\citep{imagenet-data}, ISIC Skin Lesion~\citep{isic-skin-data}, ADNI~\citep{alzheimer-data}, ChestX-ray8~\citep{chest-xray-data}.
+    
+    \item \emph{Tabular}: Adult income, German credit, Student Performance, Breast cancer, Default of credit, Shopping, Iris,  Wine, Spambee, Covertype, ICU~\citep{UCI-repo}, LendingClub~\citep{lendingclub-data}, Give Me Some Credit \citep{givemesomecredit-data}, COMPAS~\citep{compas-data}, LSAT~\citep{lsat-data}, Pima diabetes~\citep{pima-diabetes-data}, HELOC/FICO~\citep{fico-data}, Fannie Mae~\citep{fannie-data}, Portuguese Bank~ \citep{Portuguese_Bank_data}, Sangiovese~\citep{Sangiovese-data}, Bail dataset~\citep{bail-data}, 
+    Simple-BN~\citep{mahajan_preserving_2020}, AllState~\citep{allstate-data}, WiDS Datathon~\citep{woman-in-cs-data}, Home Credit Default Risk~\citep{home-credit-data}, German Housing~\citep{forster-capturing-2021}, HospitalTriage~\citep{hospitaltriage-data}, MIMIC-IV~\citep{MMIC-IV}, Freddie Mac~\citep{freddiemac-data}, UK unsecured personal loans~\citep{stress-test-creditscore}, insurance dataset \citep{inverse-classification-multiple-algos}, BPIC2017 \citep{Loreley-huang-2022}. 
+\end{itemize}
+
+\subsection{Metrics for evaluation of counterfactual generation algorithms} 
+
+Most of the counterfactual generation algorithms are evaluated on the desirable properties of counterfactuals.  
+Counterfactuals are considered actionable feedback to individuals who have received undesirable outcomes from automated decision-makers, and therefore, a user study can be considered a gold standard. 
+The ease of acting on a recommended counterfactual is thus measured by using quantifiable proxies:
+% \vspace{-0.8em}
+\begin{enumerate}[leftmargin=*]
+    \item \emph{Validity}: Validity measures the ratio of the counterfactuals that actually have the desired class label to the total number of counterfactuals generated. 
+    Higher validity is preferable. Most papers report it. 
+    
+    \item \emph{Proximity}: Proximity measures the distance of a counterfactual from the input datapoint. 
+    For counterfactuals to be easy to act upon, they should be close to the input datapoint. Distance metrics like the L1 norm, L2 norm, Mahalanobis distance are common. 
+    To handle the variability of range among different features, some papers standardize them in pre-processing or divide L1 norm by median absolute deviation of respective features~\citep{wachter_counterfactual_2017,mothilal_explaining_2020,russell_efficient_2019}, or divide L1 norm by the range of the respective features~\citep{karimi_algorithmic_2020,karimi_model-agnostic_2020,dandl_multi-objective_2020}. 
+    Some papers term proximity as the average distance of the generated counterfactuals from the input. Lower values of average distance are preferable. 
+    
+    \item \emph{Sparsity}: Shorter explanations are more comprehensible to humans~\citep{Miller-xai:2019}, therefore, counterfactuals ideally should prescribe a change in a small number of features. Although a consensus on a hard cap on the number of modified features has not been reached, \citet{keane2020good} cap a sparse counterfactual to at most two feature changes. 
+    
+    \item \emph{Counterfactual generation time}: Intuitively, this measures the time required to generate counterfactuals. This metric can be averaged over the generation of a counterfactual for a batch of input datapoints or for the generation of multiple counterfactuals for a single input datapoint. 
+    
+    \item \emph{Diversity}: Some algorithms support the generation of multiple counterfactuals for a single input datapoint. The purpose of providing multiple counterfactuals is to increase the ease for applicants to reach at least one counterfactual state. Therefore, the recommended counterfactuals should be diverse, allowing applicants to choose the easiest one. 
+    If an algorithm is strongly enforcing sparsity, there could be many different sparse subsets of the features that could be changed. Therefore, having a diverse set of counterfactuals is useful. 
+    Diversity is encouraged by maximizing the distance between the multiple counterfactuals by adding it as a term in the optimization objective~\citep{mothilal_explaining_2020,dandl_multi-objective_2020} or as a hard constraint~\citep{Ustun19:Actionable,karimi_model-agnostic_2020,scaling_Nearest_CFE}, or by minimizing the mutual information between all pairs of modified features~\citep{Grace:2019}. \citet{mothilal_explaining_2020} reported diversity as the feature-wise distance between each pair of counterfactuals. A higher value of diversity is preferable. 
+    
+    \item \emph{Closeness to the training data}: Recent papers have considered the actionability and realisticness of the modified features by grounding them in the training data distribution. This has been captured by measuring the average distance to the k-nearest datapoints~\citep{dandl_multi-objective_2020}, or measuring the local outlier factor~\citep{Kanamori2020:DACE}, or measuring the reconstruction error from a VAE trained on the training data~\citep{mahajan_preserving_2020,van_looveren_interpretable_2020}, or measuring the PDF of such datapoints using KDE \citep{coherent_CFEs}, or measuring the maximum mean discrepancy (MMD) between the original and counterfactual points~\citep{conditional_gan_cfe_looveren}. A lower value of the distance and reconstruction error is preferable. 
+    
+    \item \emph{Causal constraint satisfaction (feasibility)}: This metric captures how realistic the modifications in the counterfactual are by measuring if they satisfy the causal relation between features. \citet{mahajan_preserving_2020} evaluated their algorithm on this metric.
+    
+    \item \emph{IM1 and IM2}: \citet{van_looveren_interpretable_2020} proposed two interpretability metrics specifically for algorithms that use auto-encoders. Let the counterfactual class be $t$, and the original class be $o$. $AE_t$ is the auto-encoder trained on training instances of class $t$, and $AE_o$ is the auto-encoder trained on training instances of class $o$. Let $AE$ be the auto-encoder trained on the full training dataset (all classes).
+    \begin{equation}
+        IM1 = \frac{\twonorm{x_{cf} - AE_t(x_{cf})}}{\twonorm{x_{cf} - AE_o(x_{cf})} + \epsilon}
+    \end{equation}
+    
+    \begin{equation}
+        IM2 = \frac{\twonorm{AE_t(x_{cf}) - AE(x_{cf})}}{\norm{x_{cf}} + \epsilon}
+    \end{equation}
+    %\emph{IM1} is the ratio of the reconstruction error of the counterfactual using an auto-encoder trained on the counterfactual class divided by the reconstruction error of the counterfactual using an auto-encoder trained on the original class. \emph{IM2} is a scaled L2 norm of the reconstruction from an auto-encoder trained on the counterfactual class and the reconstruction from an auto-encoder trained on all the classes. 
+    A lower value of \emph{IM1} implies that the counterfactual ($x_{cf}$) can be better reconstructed by the auto-encoder trained on the counterfactual class ($AE_t$) compared to the auto-encoder trained on the original class ($AE_o$). Thus implying that the counterfactual is closer to the data manifold of the counterfactual class.  
+    A lower value of \emph{IM2} implies that the reconstruction from the auto-encoder trained on the counterfactual class and the auto-encoder trained on all classes is similar. 
+    Therefore, a lower value of \emph{IM1} and \emph{IM2} means a more interpretable counterfactual. 
+    
+    \item \emph{Label Variation Score and Oracle Score}: \citet{hvilshoj-cfe-new-metrics} point out that the previous metrics are unable to detect out-of-distribution CFEs (especially for high dimensional datasets) and propose two new metrics. \emph{Label Variation Score} applies when each datapoint has multiple labels, and the intuition is that CFE for a particular label should not affect the predictions for other labels (unless they are highly correlated). 
+    
+    \begin{equation}
+        LVS = \sum_{l \in L} d_{div} [ p_{l}(x), p_{l}(CFE(x)) ]
+    \end{equation}
+    where L is the total number of labels for a datapoint and $p_{l}$ is the predicted probability for the specific label $l$, and $d_{div}$ measures the divergence between the predicted probability of label $l$ for the original datapoint $x$ and its CFE. 
+    
+    \emph{Oracle Score} is similar to validity, however, with an additional classifier trained on the same dataset as the original classifier. The intuition is that if a CFE is more like an adversarial example for a classifier, the CFE would not be classified in the desired class by the other classifier, and hence we use the prediction from the additional classifier as the ground truth validity. 
+    
+\end{enumerate}
+
+Some of the reviewed papers did not evaluate their algorithm on any of the above metrics. They only showed a couple of example inputs and respective CFEs, details about which are available in the full table (see~\cref{sec:full-table}).  
+

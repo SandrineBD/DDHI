@@ -1,0 +1,815 @@
+---
+abstract: |
+  In recent years, causal modelling has been used widely to improve
+  generalization and to provide interpretability in machine learning
+  models. To determine cause-effect relationships in the absence of a
+  randomized trial, we can model causal systems with counterfactuals and
+  interventions given enough domain knowledge. However, there are
+  several cases where domain knowledge is almost absent and the only
+  recourse is using a statistical method to estimate causal
+  relationships. While there have been several works done in estimating
+  causal relationships in unstructured data, we are yet to find a
+  well-defined framework for estimating causal relationships in
+  Knowledge Graphs (KG). It is commonly used to provide a semantic
+  framework for data with complex inter-domain relationships. In this
+  work, we define a hybrid approach that allows us to discover
+  cause-effect relationships in KG. The proposed approach is based
+  around the finding of the instantaneous causal structure of a
+  non-experimental matrix using a non-Gaussian model, i.e; finding the
+  causal ordering of the variables in a non-Gaussian setting. The
+  non-experimental matrix is a low-dimensional tensor projection
+  obtained by decomposing the adjacency tensor of a KG. We use two
+  different pre-existing algorithms, one for the causal discovery and
+  the other for decomposing the KG and combining them to get the causal
+  structure in a KG.
+author:
+- |
+  Rohan Giriraj, Sinnu Susan Thomas\
+  Department of Computer Science and Engineering\
+  Digital University Kerala (IIITMK)\
+  India 695317\
+  `rohan.mi19, sinnu.thomas@iiitmk.ac.in`\
+bibliography:
+- references.bib
+title: 'Causal Discovery in Knowledge Graphs by Exploiting Asymmetric
+  Properties of Non-Gaussian Distributions'
+---
+
+
+Introduction
+============
+
+
+According to Pearl, causal inference is nothing more than a formalized
+approach to answer the simple question of "Why" in statistics. Most
+machine learning is based around the principle of correlation and
+usually operates under the assumption that the training and testing
+samples are $i.i.d$. i.e; the training and testing samples belong to the
+same distribution. Where machine learning falls short is in its ability
+to generalize from previous experiences and transfer them to current
+problems. This is called *out-of-distribution* generalization
+[@Schoelkopf2019]. The implications of causal inference in machine
+learning have been huge, ranging from better, more interpretable models
+to helping solve adversarial vulnerability and enabling robust
+generalization in common supervised learning tasks. There have been
+several known approaches to define causality as a formal study of
+cause-effect relationships, the most prominent one being the
+Neyman-Rubin causal model (c. 1923) which defines the *fundamental
+problem of causal inference* \[insert reference here\] and a potential
+outcomes' framework as an alternative to randomized trials/experiments.
+Pearl further extended the formal study of causality by defining a
+structural causal model (SCM) \[insert reference here Pearl 2009a.\].
+The SCM uses a combination of structural equations and graphical causal
+diagrams to represent causal relationships. The SCM viewpoint is
+intuitive for machine learning which is based around the approximation
+of functions. In the SCM model, we have a set of observables
+$X_1,...,X_n$ modelled as random variables associated with the vertices
+of directed acyclic graphs. We assume each observable to be the result
+of a function which can be defined as: $$\label{scm}
+    X_i := f_i(PA_i,U_i), (i=1,...,n)$$
+
+
+where $f_i$ is a deterministic function, **$PA_i$** is the parent(s) of
+the $X_ith$ observable random variable. $U_i$ is an exogenous variable
+that is assumed to be jointly independent. If we know the value of every
+exogenous variable, then using the functions in $f$ , we can determine
+with perfect certainty the value of every endogenous variable. Given a
+simple system consisting of two variables $X$ and $Y$, where $X$ causes
+$Y$ then the causal diagram would be $X \rightarrow Y$ where the arrow
+denotes the direction of causality. Here, $X$ is considered to be the
+parent of $Y$, and in the case of DAGs, they satisfy the **causal Markov
+condition** which means that conditioned on the set of all its direct
+causes, a node is independent of all variables that are not direct
+causes or direct effects of that node. \[insert reference from wiki\].
+Since we assume joint independence of the variables, we can factorize
+the distribution into causal conditionals that can be called the causal
+or disentangled factorization,
+$$p(X_1,...,X_n) = \prod_{i=1}^{n} p(X_i|PA_i)$$
+
+
+![A simple DAG consisting of four random
+variables.](DAG_example_drawn.jpg){#fig:my_label}
+
+
+The disentangled factorization of the simple DAG shown in Fig.
+[1](#fig:my_label){reference-type="ref" reference="fig:my_label"} is:
+$$p(x1,x2,x3,x4) = \prod_{i=1}^n p(x1)p(x2|x1,x3)p(x3)p(x4|x3)$$
+
+
+KG are very useful for defining the complex inter-domain relationships
+between different data points. They are usually structured in the form
+of triples where each triple consists of a subject, a predicate and an
+object. $subject \xrightarrow{predicate} object$. KG typically adhere to
+some deterministic rules, such as type constraints and transitivity, but
+they also possess some \"softer\" statistical patterns or regularities
+such as *homophily* - a tendency of entities to be related to other
+entities with similar characteristics. Another statistical pattern is
+the *block structure* which refers to the property where entities can be
+divided into distinct groups (blocks) such that all members of a group
+have similar relationships to members of other groups. The existence of
+certain triples in the KG affects the existence of other triples in the
+same KG. Because there is a statistical dependence between certain
+triples, we can postulate that there are causal structures hidden in the
+KG, in accordance with the **Common Cause Principle**. According to the
+Common Cause Principle, if two observables $X$ and $Y$ are statistically
+dependent, then there exists a variable $Z$ that causally influences
+both and explains the dependency between them. The paper hopes to
+uncover the causal relationships present in a KG by posing the problem
+as an application of multi-dimensional causal discovery. Through causal
+discovery, KG can provide better insight for tasks related to KG such as
+KG completion and link prediction
+
+
+Inclusion of causality in fields such as machine learning has shown
+improved results when it comes to problems such as generalizations and
+countering adversarial attacks [@yang2019causal]. Causality has been
+applied to the different modalities of data required in machine
+learning, be it images [@zhu2020cookgan], text [@keith-etal-2020-text]
+or numerical data [@spirtes2000causation]. However, of these modalities,
+much work is not done in terms of causal discovery in KG semantically
+rich method for storing and retrieving relational data. They describe
+entities based on the relationships they hold with other entities. These
+entities and relationships combined are represented in the form of a
+tuple $(s,p,o)$ (subject, predicate, object) or $(h,r,t)$ (head,
+relation, tail), which is called a triple. Eq.
+[\[triple\]](#triple){reference-type="eqref" reference="triple"} shows
+the diagrammatic representation of a triple. $$\label{triple}
+subject \xrightarrow{predicate} object$$ KG possesses statistical
+properties that show how some triples affect other triples i.e; the
+existence of some triples affects the existence of certain other
+triples. This statistical dependence between the triples of a KG leads
+us to postulate the existence of a cause-effect relationship that
+governs how the triples affect each other. Our assumption is based on
+the Common Cause Principle [@hofer1999reichenbach], which states that
+when two variables $X$ and $Y$ are statistically dependent, there exists
+a third variable $Z$ that influences both $X$ and $Y$. This third
+variable is called a "confounder\" and in most cases, remains ambiguous.
+In the proposed method, we assume that there are no latent confounders,
+and only the observed data is taken into consideration. The assumption
+is necessary for the causal discovery algorithm, Linear Non-Gaussian
+Acyclic Model (LiNGAM) [@JMLR:v7:shimizu06a] that discovers the causal
+order using Independent Component Analysis (ICA) [@Hyvaerinen2000] under
+non-Gaussian assumption on observational data. LiNGAM exploits the
+asymmetry of non-Gaussian data in higher order statistics, to determine
+the causal direction among the data points.
+
+
+The implications of causal discovery in the context of KG are huge,
+allowing better path discovery for explainable reasoning and querying.
+In this work, we define a hybrid theoretical approach to attempt solving
+the problem of causal discovery in KG. The contributions of this work
+are threefold. At first, we use TuckER [@Balazevic2019], a method for
+embedding a KG after decomposing its adjacency tensors into a core
+tensor and constituent matrices. Secondly, we take the decomposed
+tensor, and we project them into a matrix, **Q**. Finally, the projected
+matrix is then passed to the DirectLiNGAM [@Shimizu2011] algorithm that
+finds the causal ordering from the given data matrix.
+
+
+The remainder of this paper is organized as follows. Section
+[2](#lit_review){reference-type="ref" reference="lit_review"} contains a
+brief literature review and underscores the proposed contributions.
+Section [3](#methodology){reference-type="ref" reference="methodology"}
+introduces the causal discovery in KG. Section
+[4](#results){reference-type="ref" reference="results"} features
+numerical experiments and Section [5](#limit){reference-type="ref"
+reference="limit"} highlights the limitations of the proposed work.
+Finally, Section [6](#conclusions){reference-type="ref"
+reference="conclusions"} concludes the work.
+
+
+Literature Review {#lit_review}
+=================
+
+
+The proposed work tries to define a framework that can infer causal
+relationships from KG a multi-relational graph composed of entities and
+relationships which are regarded as nodes and different types of edges
+respectively [@wang2017knowledge]. They are known to possess certain
+statistical properties such as transitivity and type constraints
+[@Ji2021tnnls] and also some softer statistical patterns can be seen in
+larger KG. YAGO [@yago], DBPedia [@dbpedia], Freebase [@fb15k], WordNet
+[@fb15k] etc. have given researches access to large KGs which allowed
+them to experiment and discover more statistical patterns within them.
+We need to represent the KG in such a way that it becomes easier for us
+to capture the statistical relationships present in the KG. Most models
+represent triples via latent entities. Such representations can be
+broadly classified into three main categories: point-wise space, complex
+space, Gaussian space and Manifold space [@Ji2021tnnls].
+
+
+Of these, we concentrate on pointwise space representation of the KG
+that includes vector, matrix, and tensor space in this work. TransE
+[@fb15k] represents the translational representation of entities in
+$d$-dimensions $h+r \approx t$. TransR [@TransR] was introduced to
+combat the problem of representing both the entities and relationships
+in single space and defines a matrix $M_r \in \mathbb{R}^{k  \times d}$,
+where $k$ is the entity embedding space and $d$ is the relation space.
+TransH [@wang2014knowledge] is another example where the translational
+model is extended to work with hyperplanes. Other methods such as HolE
+[@HolE] which is based on semantic matching, uses a plain vector space
+for its representation. Encoding models are just better versions of the
+point-wise space models, where simple models such as bilinear models
+[@NIPS2012_0a1bf96b] achieve state-of-the-art performance compared to
+the existing point-wise space models such as TransE, RESCAL [@rescal],
+DistMult [@yang2015embedding], and ComplEx [@ComplEx]. Of these models,
+we are most interested in RESCAL, which explains triples as pairwise
+interactions of latent features. RESCAL can be further extended to work
+with higher dimensional data to handle entities properly
+[@yago_factorizing]. A better method for encoding relationships is
+TuckER that was introduced to decompose the KG using three-way tucker
+decomposition [@Balazevic2019] to a core tensor and constituent matrices
+of entities and relationships.
+
+
+We choose TuckER over other methods since it allows full-expressivity
+and other encoding models such as RESCAL that can be considered as a
+special case of TuckER. It also takes the asymmetry of the KG into
+consideration since the proposed causal inference method is dependent on
+that. While there are several other encoding methods such as the neural
+network based NTN [@NTN] and NAM [@liu2016probabilistic], we follow
+Occam's Razor and a relatively simpler linear model of TuckER
+architecture for the experiments. Causal discovery algorithms can be
+classified into three categories. First, constraint based (CB)
+algorithms learn a set of causal graphs that satisfy the conditional
+independence in the data. Statistical tests can be used to verify if a
+candidate graph is *faithful* [@spirtes2000causation]. A popular example
+of this is the Peter-Clark algorithm [@spirtes2000causation]. Second,
+score based (SB) algorithms check for the goodness of the fit tests
+instead of testing for conditional independence. It uses a scoring
+function, Bayesian Information Criterion (BIC) [@schwarz1978estimating]
+and maximizes the criterion. There are certain hybrid algorithms that
+combine both SB and CB methods, for achieving a better result. Third,
+structural causal model (SCM) based algorithms in which a variable can
+be written as a function of the directed causes and some noise term.
+
+
+We consider the *Pearlean* [@Pearl2009] approach for causal inferences,
+in the context of SCMs [@Pearl2009] in this work. SCM provides a
+comprehensive theory of causality.
+Eq.[\[scm\]](#scm){reference-type="eqref" reference="scm"} shows how SCM
+can be represented as a function, also called as Functional Causal Model
+(FCM) $$\label{scm}
+    X_i = f_i(\textbf{PA}_i, U_i)$$ where $f_i$ is a deterministic
+function, $\textbf{PA}_i$ is the parent(s) of the $X_ith$ observable
+random variable. $U_i$ is an exogenous variable that is assumed to be
+jointly independent. SCMs consist of two components: the causal graph
+and the structural equation [@bollen1998interactions]. In causal graphs,
+each node denotes a random variable and each directed edge from $X$ to
+$Y$ denotes the causal influence of $X$ on $Y$. Causal graphs are
+usually assumed to fulfill the Markov Property such that the implied
+joint probability factorizes into a "disentangled representation"
+following recursive decomposition. In the case of causal graphs, there
+can be cases where multiple graphs can satisfy the conditional
+independencies. To identify the scenarios where the true graph is
+identifiable, for which the most common example is a linear system based
+on non-Gaussian errors [@JMLR:v7:shimizu06a].
+
+
+Non-Gaussianity is asymmetric when we take higher order statistics into
+account [@Dodge2001; @Dodge2009]. We use an algorithm that specifically
+exploits this asymmetric property to find the causal order, LiNGAM. The
+task of learning in LiNGAM comes down to estimating the lower triangular
+matrix that shows the causal order $k(j)$ where no variable precedes its
+cause, similar to topologically sorting Directed Acyclic Graph (DAG)
+[@pang2015topological]. LiNGAM uses ICA to decompose the data matrix
+$\textbf{X}  = \textbf{BS}$, where $B$ is the mixing matrix and $S$ is
+the source matrix. The matrix $\textbf{B}$ is then used to compute
+$\textbf{W} = \textbf{B}^{-1}$, which is the unmixing matrix.
+$\textbf{W}$ can then be used to find the lower-triangular matrix.
+ICALiNGAM gets stuck at the local optima rather than the global ones. To
+counter this, DirectLiNGAM was introduced, which guaranteed convergence.
+Although its approach is more or less similar to ICALiNGAM, it uses
+Kernelized ICA [@bach2002kernel] by kernelizing the canonical
+correlation [@akaho2006kernel] of the variables.
+
+
+The proposed method is heavily inspired by the multi-dimensional causal
+discovery [@schaechtle2013multi] that introduces a tensor decomposition
+based around tucker decomposition and HOSVD [@wang2017tensor] for
+discovering causal structures in temporal data. Another work that
+explicitly discussed the problem of causal inference in KG
+[@semex_2019_4] which is based on the idea of pruning KG and having a
+probabilistic relational model learn the causal structures within the
+pruned graph. However, pruning the graph requires explicit domain
+knowledge and insight on how the KG is designed. This is where the
+proposed method is different, as we don't require any domain data for
+causal discovery. This makes the proposed approach more robust and
+generalizable for multiple datasets and domains. Other methods are very
+interactive, requiring human input occasionally, but the proposed method
+can find the causal relationships between the embeddings of the KG.
+
+
+Methodology
+===========
+
+
+Causal Discovery Framework
+--------------------------
+
+
+We formulate the causal discovery framework for the given variables to
+discover their causal order. We use a non-Gaussian version of Structural
+Equation Model (SEM) and Bayesian Network (BN) called LiNGAM which
+approximates a causal order $k(i)$ for a set of observed variables
+modeled as a DAG. LiNGAM is based around some key assumptions:
+
+
+-   The set of observed variables ${x_1,...,x_n}$ can be arranged in a
+    causal order, such that no later variable causes any earlier
+    variable. A causal order is denoted as $k(i)$.
+
+
+-   Each observable $x_i$ can be designed as a linear combination of its
+    earlier variables. $$\label{lingam}
+        x_i = \sum_{k(j)>k(i)} b_{ij}x_j + e_i$$ Here, $b_{ij}$
+    represents the connection strength of the variable $x_i$ and $x_j$,
+    $e_i$ represents a noise term. In the case of KG, we assume the
+    relationships between the triples to be of linear nature.
+
+
+-   The disturbances $e_i$ are continuous, independent random variables
+    with non-Gaussian distributions. This is the same as the noise
+    variable $U_i$ from Eq. [\[scm\]](#scm){reference-type="ref"
+    reference="scm"}.
+
+
+The above assumptions imply that there are no latent confounders
+involved in the proposed system, and this is called "causally
+sufficient". In our specific case, it means that there are no unobserved
+triples in a KG.
+
+
+Why Non-Gaussianity?
+--------------------
+
+
+According to Shimizu et al. [@JMLR:v7:shimizu06a], algorithms based
+around second-order statistics are unable to discern the entire causal
+structure in most cases. A simple example would be the consideration of
+two variables $a$ and $b$ where they both are statistically dependent on
+each other. We know for a fact that in the case of a Gaussian
+distribution, $\rho_{ab}$ --- the Pearson correlation coefficient, is
+symmetric which means that the direction of dependence,
+$a \rightarrow b$ or $b \rightarrow a$, is unidentifiable. However, in
+higher order statistics, the correlation coefficients exhibit properties
+of asymmetry [@Dodge2001; @Dodge2009]. The *fourth standard moment*-
+kurtosis of a distribution is defined as
+$$\kappa_x = \textbf{E}\Big[\Big(\frac{X-\mu_x}{\sigma_x}\Big)^4\Big] = \frac{\mu_4}{\sigma^4}$$
+where $\mu_4$ is the standardized central moment, **E** is the
+expectation and $\sigma$ is the standard deviation. Excess Kurtosis can
+be defined as $\kappa_x-3$. The fourth power of $\rho_{XY}$ can be
+written as the ratio of the excess kurtosis of response and predictor,
+where response is $Y$ and predictor is $X$, when $X \rightarrow Y$ is
+considered. $$\rho_{xy}^4 = \frac{\kappa_y}{\kappa_x}$$
+
+
+$\rho_{xy}$ is bounded by the interval $[-1,1]$. So when we consider a
+Gaussian distribution, the excess kurtosis will be
+$\kappa_x = 0, \kappa_y = 0$, resulting in an irrational value
+$\frac{0}{0}$. Therefore, we know that asymmetry exists in the case of
+non-Gaussian distributions when higher moments are taken into
+consideration.
+
+
+Traditional LiNGAM models the problem of causal discovery in the form of
+ICA. ICA uses a set of inverse linear basis transformations to generate
+the constituent components of a mixed signal. ICA can be modeled as
+matrix multiplication $x(t) = \textbf{M}s(t)$, where $x(t)$ and $s(t)$
+are the observed and source signals respectively and $\textbf{M}$ is the
+unknown mixing matrix. Eq. [\[lingam\]](#lingam){reference-type="eqref"
+reference="lingam"} can be modeled in the same form as above,
+$x = \textbf{A}e$ where $\textbf{A} = (\textbf{I}-\textbf{B})^{-1}$
+where $\textbf{B}$ is the mixing matrix in the ICA problem setting and
+$I$ is the identity matrix. This form, taken along with the non-Gaussian
+and independent components of **e**, is called the linear independent
+component analysis model.
+
+
+However, there are problems with the ICA approach. The calculation of
+gradients, to minimize the diagonal elements of the unmixing matrix
+**W**, does not guarantee convergence of the solution. There is a risk
+of the algorithm getting stuck at the local optima. Secondly, the
+permutations performed to obtain the lower-triangular matrix are
+scale-invariant, leading to the finding of the wrong causal order. To
+mitigate these issues, we prefer DirectLiNGAM that guarantees
+convergence. Compared to the pre-existing methods this algorithm
+requires no algorithmic parameters and is guaranteed to converge to the
+right solution within the fixed number of steps, provided it follows the
+model strictly along with all the assumptions and the sample size is
+infinite.
+
+
+In DirectLiNGAM, the input is a $p$-dimensional vector $x$ with variable
+subscripts $U$ and a data matrix $X$ of shape $p \times n$. Then two
+ordered lists, $K := \emptyset$ and $m := 1$ are initialized.\
+Then until $p-1$ subscripts have been appended to $K$:
+
+
+-   Least square regression is done on variables $x_i$ and $x_j$, where
+    $i \in U \setminus K (i\neq j)$ and the residual vectors $r^{(j)}$
+    and the residual data matrix $R^{(j)}$ from $X$. Then a variable
+    $x_m$ is computed by minimizing an independence measure.
+    $$x_m = \arg \underset{j \in U \setminus K}{\min} T_{kernel}(x_j;U\setminus K)$$
+    $T_{kernel}$ is a kernelized measure of independence computed by
+    calculating the mutual information between the variable $x_j$ and
+    residual vector $r_i$
+
+
+    $$T_{kernel}(x_j;U) = \sum_{i \in U, i \neq j} \widehat{MI}_{kernel}(x_j, r_i^{(j)})$$
+    The kernel-based mutual information estimator can be written as:
+
+
+    $$\widehat{MI}_{kernel}(y_1,y_2) = -\frac{1}{2}\log\frac{\det \mathcal{K}_\tau}{\det \mathcal{D}_\tau}$$
+
+
+    where $\tau$ is a small positive constant and $\mathcal{K}_\tau$ and
+    $\mathcal{D}_\tau$ are just matrices whose blocks are
+    $(\mathcal{K}_\tau)_{ij} = K_iK_j$ for $i\neq j$, and
+    $(\mathcal{K}_\tau)_{ii} = (K_i + \frac{N\tau}{2}I)^2$ and
+    $\mathcal{D}_\tau$ is just a block diagonal matrix with blocks
+    $(K_i+\frac{N\tau}{2}I)^2$. $K_1$ and $K_2$ are just Gram matrices
+    whose elements are RBF kernels of the sets of observations of $y_1$
+    and $y_2$ respectively (in the two variable case).
+
+
+-   $m$ is appended to $K$.
+
+
+-   $x:=r^{(m)}$, $X := R^{(M)}$
+
+
+Once $p-1$ subscripts have been appended to $K$ the remaining variable
+is appended to $K$ and a strict lower-triangular matrix $B$ is formed
+using the order in $K$, and the connection strengths $b_{ij}$ is
+estimated by a conventional regression method such as least squares or
+maximum likelihood based on covariance.
+
+
+KG Representation
+-----------------
+
+
+KG are usually represented in the form of triples. Triples consist of
+entities and relationships. Let the set of all entities be
+$\mathcal{E} = \{e_1,...,e_{N_e}\}$, and the set of all relationships be
+$\mathcal{R} = \{r_1,...,r_{N_r}\}$. The triples are usually represented
+as tuples $(e_i,r_k,e_j)$. Each possible triple can also be modeled as a
+binary random variable $y_{ijk} \in \{0,1\}$.
+
+
+$$y_{ijk} = 
+    \begin{dcases}
+        1, & \text{if the triple $(e_i,r_k,e_j)$ exists}\\
+        0 & \text{otherwise} \\
+    \end{dcases}$$
+
+
+This can also be represented as a third order adjacency tensor of shape
+**Y**$=\{0,1\}^{N_e \times N_e \times N_r}$. Estimation of the joint
+probability distribution of the observed triples can help us derive the
+entire KG. For our particular application, we assume that the KG is
+built in Closed World Assumption (CWA) [@minker1982indefinite]. We know
+that some triples are statistically dependent on others, meaning that
+the existence of some triples influences the existence of other triples.
+To model this correlation, we need to assume that all triples $y_{ijk}$
+are conditionally independent given the latent features associated with
+the subject, predicate, object and observed graph features and
+parameters. These score-based models predict the feasibility of a triple
+based on a scoring function $f(x_{ijk}, \theta)$, where the score
+denotes the confidence that a triple exists given the parameters
+$\theta$. In most cases, the triples are explained by the latent
+features, where latent features are the elements in a vectorized form of
+an entity/relationship in a triple. These latent features can come from
+different embedding algorithms that essentially convert text into
+vectorized form. For example: consider a system with only two entities
+then the latent features can be written in vectorized form as: $$e_1 =
+    \begin{bmatrix}
+    0.98\\
+    0.
+    \end{bmatrix},
+    e_2 = 
+    \begin{bmatrix}
+    0.\\
+    0.2
+    \end{bmatrix}$$
+
+
+There are many more complicated methods for embedding entities, which we
+discussed in the Section [2](#lit_review){reference-type="ref"
+reference="lit_review"}. These are language models that take in some
+text and output the resultant vector with a certain number of latent
+features. The main intuition behind the latent feature model is the fact
+that the relationships between the different entities can be deduced by
+the interactions between their latent features. In the proposed
+approach, we use these latent features to predict the causal order of
+the system. There are several score-based methods such as RESCAL,
+DistMult, and ComplEx but we prefer TuckER for the proposed approach. It
+is fully expressive, meaning that it is capable of capturing all the
+information present within the data. It allows us to represent all the
+other score-based, tensor factorization models as special cases of
+itself. It is a linear model, which is important because one of the
+major assumptions required for LiNGAM is linearity.
+
+
+Tucker decomposition decomposes a tensor into its constituent matrices
+and a smaller core tensor. In a three mode scenario a tensor
+$\mathcal{X} \in \mathbb{R}^{I \times J \times K}$ outputs a core tensor
+$\mathcal{Z}$, and factor matrices **A**, **B** and **C**. Elements of
+the core tensor show the level of interaction between the different
+components.
+$$\mathcal{X} \approx \mathcal{Z} \times_1 \textbf{A} \times_2 \textbf{B} \times_3 \textbf{C}$$
+
+
+We take the binary adjacency tensor representation of the KG and use
+Tucker decomposition to reduce it to the core tensor and factor
+matrices. We have an entity embedding matrix **E** which is equivalent
+for both subject and object entities, i.e;
+$\textbf{E} = \textbf{A} = \textbf{C} \in \mathbb{R}^{n_e \times d_e}$.
+The second factor matrix is the relation embedding matrix
+$\textbf{R} = \textbf{B} \in \mathbb{R}^{n_r \times d_r}$ where $n_e$
+and $n_r$ are the number of entities and relations respectively and
+$d_e$, $d_r$ are the dimensions of the entity and relation matrices.
+These dimensions are the same as the latent features we mentioned above.
+Finally, we have a core tensor
+$\mathcal{W} \in \mathbb{R}^{d_e \times d_r \times d_e}$, which is
+diagrammatically represented in Fig.
+[\[core-tensor\]](#core-tensor){reference-type="ref"
+reference="core-tensor"}. The scoring function of the TuckER is:
+$$\phi(e_s,r,e_o) = \mathcal{W} \times_1 e_s \times_2 w_r \times_3 e_o$$
+where $e_s,e_o \in \mathbb{R}^{d_e}$ are rows of the entity embedding
+matrix **E** denoting the subject and object entities of a triple.
+$w_r \in \mathbb{R}^{d_r}$ are the rows of relation embedding matrix
+**R** denoting the relations or the predicate values between the
+different entities. The result of the scoring function is then passed
+through the logistic sigmoid function so that the probability of a
+triple being true can be calculated. The final score obtained is
+$\sigma(\phi(e_s,r,e_o))$. We need to have a matrix that can be used to
+represent the decomposed form of a tensor apart from the core tensor and
+different factor matrices. To achieve this, we introduce a projection
+tensor $\mathcal{Q} \in \mathbb{R}^{n_r \times d_e \times d_e}$ defined
+as $$\label{q_tensor_eq}
+    \mathcal{Q} = (\mathcal{W} \times_1 \textbf{E} \times_2 w_r) \textbf{E}.$$
+This tensor, as shown in Fig.
+[\[tensorQ\]](#tensorQ){reference-type="ref" reference="tensorQ"}
+captures the relationship between the dimensions of the entity
+embeddings $d_e$, since we are more interested in the latent variables
+that make up the entities. The resultant tensor
+$\mathcal{Q} \in \mathbb{R}^{n_r \times d_e \times d_e}$ is converted
+into a matrix $\textbf{Q} \in \mathbb{R}^{n_r \times (d_e\times d_e)}$
+suitable for DirectLiNGAM.
+
+
+The Hybrid Algorithm
+--------------------
+
+
+We take the matrix **Q** and use that as a $p \times n$ dimensional data
+matrix as input for DirectLiNGAM. As a final check, we perform a
+kurtosis test and find that the matrix is non-Gaussian. DirectLiNGAM has
+a run time complexity of $\mathcal{O}(np^3M^2 + p^4M^3)$, so depending
+on the size of $p$, the runtime of the algorithm increases polynomially.
+For higher values of $p$, we reshaped the values of **Q** accordingly.
+The proposed approach gives the freedom to choose the number of
+relationships we can consider for the algorithm i.e; we can choose the
+number of rows of **R**, $w_r$ for some added flexibility as given in
+Algorithm [\[hybrid_algorithm\]](#hybrid_algorithm){reference-type="ref"
+reference="hybrid_algorithm"}.
+
+
+[\[hybrid_algorithm\]]{#hybrid_algorithm label="hybrid_algorithm"}
+
+
+-   Initialize the DirectLiNGAM algorithm with the right parameters.
+
+
+-   Initialize the triples of a KG as a third order tensor.
+
+
+-   Apply the TuckER model on the tensor to obtain the decomposed
+    components.
+    $\mathcal{Z},\textbf{A},\textbf{B},\textbf{C} \leftarrow$
+    TuckER(adjacency tensor)
+
+
+-   Choose the number of rows $w_r$ of relation matrix **R** we need for
+    the execution.
+
+
+-   Get the projection tensor
+    $\mathcal{Q} \leftarrow   (\mathcal{W} \times_1 \textbf{E} \times_2 w_r)\textbf{E}$.
+
+
+-   Matricize the tensor $\mathcal{Q}$ into the matrix $\textbf{Q}$.
+
+
+-   Causal order $k(i)$ $\leftarrow$ DirectLiNGAM(**Q**)
+
+
+-   return $k(i)$
+
+
+Experimental Results {#results}
+====================
+
+
+As the proposed approach is a highly specific application of causal
+discovery, there are no known benchmarks to check for causality in a KG
+that we can compare the proposed approach to. We find that it does give
+us a causal ordering of $d_e$, and an adjacency matrix, which we could
+then plot as a DAG. The code for the implementation is available
+[here](https://www.github.com/rohangiriraj/CausalKG).
+
+
+Implementation
+--------------
+
+
+-   **Datasets:** For the testing, we chose two datasets FB15K-237
+    [@fb15k-237], and WN18-RR [@wn18rr] subsets of the FB15K [@fb15k]
+    and WN18 [@fb15k] datasets respectively, but have their inverse
+    relations removed. The removal of inverse relations helps us avoid
+    cycles in the data. For our experimentation purposes, we chose a
+    $w_r$ value of $100$ for FB15K-237 and $10$ for WN18-RR. Fig.
+    [2](#inverse){reference-type="ref" reference="inverse"} shows an
+    example of an inverse relation in a KG. Note that the entities and
+    the relationships are the same.
+
+
+    ![Inverse relations in a KG.](reverse.png){#inverse}
+
+
+-   **Libraries:** We use a combination of different open-source
+    libraries to implement the algorithm. We use `numpy`
+    [@harris2020array] for the tensor operations, `pykg2vec` [@pykg2vec]
+    for overall embedding and tuning with TuckER, `lingam`
+    [@JMLR:v7:shimizu06a] library for working with DirectLiNGAM and
+    `graphviz` for visualizing the DAG from the causal order.
+
+
+-   **Hardware:** For training of the TuckER architecture and the
+    implementation of DirectLiNGAM, we use $9^{th}$ generation Intel
+    Core i5 9300H processor, with 8 Gigabytes of RAM. This didn't
+    particularly slow the experimentation down, as we considered smaller
+    dimensions and smaller subsets of the larger KG datasets.
+
+
+Results {#results-1}
+-------
+
+
+Table [4](#results){reference-type="ref" reference="results"} shows four
+primary columns with different parameters specified in each.
+
+
+-   **$n_{dim}$:** This specifies the dimensions of the embedding, i.e;
+    $d_e$, $d_r$. For the sake of simplicity, we are considering a case
+    where $d_e = d_r$. We tested with $5$, $7$ and $10$ dimensions.
+    Since the dimensions grow quadratically, it makes sense to
+    experiment with smaller values of $d_e$. The significance of smaller
+    dimensions is downplayed by the non-convergence of the algorithms
+    due to lack of data.
+
+
+-   **Convergence:** This shows whether the algorithm in question
+    converges to provide a solution. We observe that ICALiNGAM fails to
+    converge in most cases, especially in the case of smaller datasets
+    like WN18-RR. This further proves the significance of a method like
+    DirectLiNGAM, which is guaranteed to converge. In all the trials, we
+    found that the ICA algorithms like FastICA were unable to converge
+    despite early stopping. Since it converges at the local minima,
+    there are chances for the causal order of ICALiNGAM to be wrong.
+
+
+-   **Execution time:** This specifies the execution time taken by both
+    ICALiNGAM/LiNGAM and DirectLiNGAM to compute the causal order
+    $k(j)$. Here we observe that in all cases, the execution time of
+    ICALiNGAM is far lesser than that of DirectLiNGAM. This is because
+    there is a trade-off between execution speed and convergence. While
+    LiNGAM is faster, it failed to converge. If given enough computing
+    resources and time, DirectLiNGAM is the better choice.
+
+
+-   **Mean $p$-value:** This is the mean of the $p$-values obtained by
+    testing for independence of the error variables. This is a fairly
+    important test that checks if the LiNGAM assumption holds true for
+    the proposed case. Essentially, we want the test to fail at
+    rejecting the null hypothesis, which in this case is the
+    independence of the error/exogenous variables of LiNGAM.
+
+
+![DAG with $w_r = 237$ for FB15K-237 dataset.](dag2.png){#dag_figure}
+
+
+In Fig. [3](#dag_figure){reference-type="ref" reference="dag_figure"},
+we see that when $n_{dim} = 3$, the total number of nodes is nine. This
+is because matrix
+$\textbf{Q} \in \mathbb{R}^{n_r \times (d_e \times d_e)}$ has
+$d_e \times d_e$ as columns. So for any dimension $d_e$, there is a
+quadratic increase in the number of features. This is precisely why we
+limited ourselves to small values of $d_e$ like 5, 7, and 10.
+
+
+We further check the validity of the LiNGAM assumption by checking the
+$p$-values of independence between the error variables of the data
+matrix. This is because the most important assumption in LiNGAM is that
+the errors/exogenous variables follow a non-Gaussian distribution and
+are independent of each other so that there are no latent confounder
+variables.
+
+
+For the experiments, we take $\alpha = 0.01$ of $p$-values. The
+hypotheses for the proposed results are:\
+$\mathcal{H}_0 \leftarrow$ The error variables are independent of each
+other.\
+$\mathcal{H}_a \leftarrow$ The error variables are not independent.\
+For all cases, we find that the $p$-values are higher than the $\alpha$
+value. This means that the test has failed to reject the null
+hypothesis.
+
+
+Limitations {#limit}
+===========
+
+
+The theoretical approach we proposed in the work has its share of
+limitations. We broadly classify the limitations into two categories:
+
+
+-   **Dimensionality:** This work suffers from the curse of
+    dimensionality. We take the tensor shown in Eq.
+    [\[q_tensor_eq\]](#q_tensor_eq){reference-type="eqref"
+    reference="q_tensor_eq"} and we project it to a smaller dimension
+    **Q**. Ignoring the loss of information, one of the things we do to
+    achieve this is by increasing the number of features by two-fold. In
+    this case, by making the matrix have the shape
+    $n_r \times (d_e \times d_e)$. This is especially problematic for
+    DirectLiNGAM due to its polynomial time complexity.
+
+
+    ![Time complexity vs.
+    dimensions.](time_dim.png){#fig:time_dim_graph}
+
+
+    Fig. [4](#fig:time_dim_graph){reference-type="ref"
+    reference="fig:time_dim_graph"} shows how the increase in the number
+    of dimensions leads to a polynomial increase in the time complexity
+    of the respective algorithm. The complexity of DirectLiNGAM is
+    $\mathcal{O}(np^3M^2 + p^4M^3)$ and that of ICALiNGAM is
+    $\mathcal{O}(np^3 + p^4)$. For plotting the graph, we assume that
+    the values of $n$ and $M$ are constant, where $n$ is the number of
+    samples and $M$ is the maximal rank found by the low-rank
+    decomposition used in the kernel-based independence measure
+    \[$M (\ll n)$\]. This polynomial increase in the time-complexity of
+    the algorithm with just an increase in the dimension $d_e$ is
+    detrimental in cases where we want to examine large, feature-packed
+    KGs for causality.
+
+
+    Another problem is that standard dimensionality reduction techniques
+    like Principal Component Analysis (PCA) or Singular Value
+    Decomposition (SVD) fail to capture the causal relationships among
+    the variables. We address this problem in the future works.
+
+
+-   **Extrapolation of useable causal relationships** Proposed method is
+    a definite success when it comes to discovery of causal structures
+    in embedding matrices, but extrapolating from these causal
+    relationships to ensure its application is not something we covered
+    in this work.
+
+
+    In this work, we mostly focus on the methodology to check for causal
+    relationships in a Knowledge Graph. It is more difficult,
+    considering that we look for relationships among the embedded
+    features of a KG. In Fig. [3](#dag_figure){reference-type="ref"
+    reference="dag_figure"}, we see elements $x_0 \rightarrow x_8$.
+    These $9$ variables are $9$ features embedded by KG when we consider
+    dimensionality $d_e \times d_e$. It is not possible to perform an
+    inverse operation to get the required result, as the embeddings for
+    each entity vary greatly. Further analysis will give us more data on
+    how data can be embedded in a way where it makes sense to use causal
+    discovery for working with applications like recommendation systems,
+    etc. We will be able to develop practical applications like
+    causal-enforced reasoning.
+
+
+Conclusions
+===========
+
+
+The approaches presented in this work were the result of us trying to
+formally explore a previously unexplored avenue of causal discovery.
+Through the results, we could come to the conclusion that it is, in
+fact, plausible to discover causal structures in KG. We tried to
+approach this problem of causal discovery from a purely statistical
+perspective without the requirement of any background knowledge or
+problem/dataset specific ontologies. Future improvements include using
+better methods of tensor decomposition and representation such as LowFER
+[@amin2020lowfer], which is a generalized form of TuckER, better forms
+of decomposition and dimensionality reduction that can capture and
+project the causal structure into lower dimensions. Though we could get
+the results for the proposed approach, more in-depth analysis and
+experimentation is required to bring out the applications for the
+proposed approach on KG-based tasks (such as link prediction or KG
+completion).
